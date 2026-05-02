@@ -15,6 +15,10 @@ namespace IndustrialCameraManager.HikVision
 
         public IntPtr PixelDataPtr => native.Image.PixelDataPtr;
 
+        public byte[] Data => native.Image.PixelData;
+
+        public int Stride => (int)(ImageSize / Height);
+
         public ImagePixelFormat PixelType => ConvertFormat(native.Image.PixelType);
 
         public ulong ImageSize => native.Image.ImageSize;

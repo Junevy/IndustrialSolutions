@@ -6,6 +6,10 @@ namespace IndustrialCameraManager.Core
     {
         IntPtr PixelDataPtr { get; }
 
+        byte[] Data { get; }
+
+        public int Stride { get; }
+
         uint Width { get; }
 
         uint Height { get; }
@@ -13,5 +17,7 @@ namespace IndustrialCameraManager.Core
         ImagePixelFormat PixelType { get; }
 
         ulong ImageSize { get; }
+
+        //Bitmap ToBitmap();
     }
 }

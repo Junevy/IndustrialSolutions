@@ -11,17 +11,17 @@ namespace IndustrialCameraManager.HikVision
     {
         private bool isCreate = false;
         private bool isGrabbing = false;
-        public bool IsOpen => false;
 
+        public bool IsOpen => (camera?.IsConnected) ?? false;   // The value is true When Camera.Open()
         private IDevice camera;
         private readonly IDeviceInfo deviceInfo;
-        private readonly ICameraStream stream = new CameraStream();
         private readonly SemaphoreSlim grabLocker = new(1, 1);
+
+        public ICameraStream Stream { get; } = new CameraStream();
 
         public HikCamera(IDeviceInfo info)
         {
             this.deviceInfo = info;
-            camera.StreamGrabber.FrameGrabedEvent += GrabedProcess;
         }
 
         public HikCamera(string ipAddress, string netExport)
@@ -29,7 +29,6 @@ namespace IndustrialCameraManager.HikVision
             try
             {
                 this.camera = DeviceFactory.CreateDeviceByIp(ipAddress, netExport);
-                camera.StreamGrabber.FrameGrabedEvent += GrabedProcess;
                 isCreate = true;
             }
             catch (MvException)
@@ -53,20 +52,20 @@ namespace IndustrialCameraManager.HikVision
                 if (result != MvError.MV_OK)
                     return CameraResult.Fail(result, "Open camera failed");
 
-                if (camera is IGigEDevice)
-                {
-                    IGigEDevice gigEDevice = camera as IGigEDevice;
+                //if (camera is IGigEDevice)
+                //{
+                //    IGigEDevice gigEDevice = camera as IGigEDevice;
 
-                    // 配置网口相机的最佳包大小
-                    gigEDevice.GetOptimalPacketSize(out int packetSize);
-                    gigEDevice.Parameters.SetIntValue("GevSCPSPacketSize", packetSize);
-                }
-                else if (camera is IUSBDevice)
-                {
-                    // 设置USB同步读写超时时间
-                    IUSBDevice usbDevice = camera as IUSBDevice;
-                    usbDevice.SetSyncTimeOut(1000);
-                }
+                //    // 配置网口相机的最佳包大小
+                //    gigEDevice.GetOptimalPacketSize(out int packetSize);
+                //    gigEDevice.Parameters.SetIntValue("GevSCPSPacketSize", packetSize);
+                //}
+                //else if (camera is IUSBDevice)
+                //{
+                //    // 设置USB同步读写超时时间
+                //    IUSBDevice usbDevice = camera as IUSBDevice;
+                //    usbDevice.SetSyncTimeOut(1000);
+                //}
 
                 return CameraResult.Success(result);
             }
@@ -82,7 +81,9 @@ namespace IndustrialCameraManager.HikVision
 
         public CameraResult Close()
         {
+            StopGrab();
             int result = camera.Close();
+            isCreate = false;
             return CameraResult.Result(result == MvError.MV_OK, result);
         }
 
@@ -100,6 +101,8 @@ namespace IndustrialCameraManager.HikVision
 
             try
             {
+                camera.StreamGrabber.FrameGrabedEvent -= GrabedProcess;
+                camera.StreamGrabber.FrameGrabedEvent += GrabedProcess;
                 var grabResult = camera.StreamGrabber.StartGrabbing();
                 isGrabbing = grabResult == MvError.MV_OK;
                 return CameraResult.Result(isGrabbing, grabResult);
@@ -107,6 +110,7 @@ namespace IndustrialCameraManager.HikVision
             catch (MvException ex)
             {
                 isGrabbing = false;
+                camera.StreamGrabber.FrameGrabedEvent -= GrabedProcess;
                 return CameraResult.Fail(ex.ErrorCode, ex.Message);
             }
         }
@@ -114,8 +118,10 @@ namespace IndustrialCameraManager.HikVision
         private void GrabedProcess(object sender, FrameGrabbedEventArgs e)
         {
             var clonedFrame = (IFrameOut)e.FrameOut.Clone();
+            camera.StreamGrabber.FreeImageBuffer(e.FrameOut);   // copy完毕后释放原始帧
+
             IFrame frame = new HikFrameWrapper(clonedFrame);
-            stream.Publish(frame);
+            Stream.Publish(frame);
         }
 
         public async Task GrabAsync(CancellationToken ct = default)
@@ -143,8 +149,9 @@ namespace IndustrialCameraManager.HikVision
 
         public void StopGrab()
         {
-
-            throw new NotImplementedException();
+            camera.StreamGrabber.StopGrabbing();
+            camera.StreamGrabber.FrameGrabedEvent -= GrabedProcess;
+            isGrabbing = false;
         }
 
         public CameraResult SetParam(string key, string value)
@@ -155,6 +162,7 @@ namespace IndustrialCameraManager.HikVision
 
         public void Dispose()
         {
+            Close();
             camera.Dispose();
             camera = null;
         }

@@ -6,6 +6,17 @@ namespace IndustrialCameraManager.HikVision
 {
     public class HikCameraProvider : ICameraProvider
     {
+        private static bool isInitialized = false;
+
+        public HikCameraProvider()
+        {
+            if (!isInitialized)
+            {
+                SDKSystem.Initialize();
+                isInitialized = true;
+            }
+        }
+
         public ICamera Create(ICameraInfo info)
         {
             if (info is not HikCameraInfo hikInfo)

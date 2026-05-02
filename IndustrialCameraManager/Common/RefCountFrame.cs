@@ -1,5 +1,6 @@
 ﻿using IndustrialCameraManager.Core;
 using System;
+using System.Drawing;
 using System.Threading;
 
 namespace IndustrialCameraManager.Common
@@ -28,6 +29,10 @@ namespace IndustrialCameraManager.Common
         }
 
         public IntPtr PixelDataPtr => inner.PixelDataPtr;
+
+        public byte[] Data => inner.Data;
+
+        public int Stride => (int)(ImageSize / Height);
 
         public uint Width => inner.Width;
 
