@@ -1,4 +1,5 @@
 ﻿using IndustrialCameraManager.Core;
+using IndustrialCameraManager.Stream;
 using MvCameraControl;
 using System;
 using System.Threading;
@@ -8,18 +9,19 @@ namespace IndustrialCameraManager.HikVision
 {
     public class HikCamera : ICamera
     {
+        private bool isCreate = false;
+        private bool isGrabbing = false;
+        public bool IsOpen => false;
+
         private IDevice camera;
         private readonly IDeviceInfo deviceInfo;
-        private bool isCreate = false;
+        private readonly ICameraStream stream = new CameraStream();
         private readonly SemaphoreSlim grabLocker = new(1, 1);
-
-        public bool IsOpen => false;
 
         public HikCamera(IDeviceInfo info)
         {
             this.deviceInfo = info;
             camera.StreamGrabber.FrameGrabedEvent += GrabedProcess;
-
         }
 
         public HikCamera(string ipAddress, string netExport)
@@ -36,12 +38,6 @@ namespace IndustrialCameraManager.HikVision
             }
         }
 
-        private void GrabedProcess(object sender, FrameGrabbedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-
         public CameraResult Open()
         {
             try
@@ -55,7 +51,7 @@ namespace IndustrialCameraManager.HikVision
                 int result = camera.Open();
 
                 if (result != MvError.MV_OK)
-                    return CameraResult.Fail(result);
+                    return CameraResult.Fail(result, "Open camera failed");
 
                 if (camera is IGigEDevice)
                 {
@@ -74,9 +70,9 @@ namespace IndustrialCameraManager.HikVision
 
                 return CameraResult.Success(result);
             }
-            catch (MvException)
+            catch (MvException me)
             {
-                throw;
+                return CameraResult.Fail(me.ErrorCode, me.Message);
             }
             catch (Exception)
             {
@@ -92,9 +88,34 @@ namespace IndustrialCameraManager.HikVision
 
         public CameraResult Grab()
         {
-            int result = camera.StreamGrabber.StartGrabbing();
-            return CameraResult.Result(result == MvError.MV_OK, result);
+            if (isGrabbing)
+                return CameraResult.Fail(-1, "Camera is already grabbing");
 
+            var result = SetParam("TriggerMode", "Off");
+            if (!result.IsSuccess)
+            {
+                isGrabbing = false;
+                return result;
+            }
+
+            try
+            {
+                var grabResult = camera.StreamGrabber.StartGrabbing();
+                isGrabbing = grabResult == MvError.MV_OK;
+                return CameraResult.Result(isGrabbing, grabResult);
+            }
+            catch (MvException ex)
+            {
+                isGrabbing = false;
+                return CameraResult.Fail(ex.ErrorCode, ex.Message);
+            }
+        }
+
+        private void GrabedProcess(object sender, FrameGrabbedEventArgs e)
+        {
+            var clonedFrame = (IFrameOut)e.FrameOut.Clone();
+            IFrame frame = new HikFrameWrapper(clonedFrame);
+            stream.Publish(frame);
         }
 
         public async Task GrabAsync(CancellationToken ct = default)
@@ -123,7 +144,7 @@ namespace IndustrialCameraManager.HikVision
         public void StopGrab()
         {
 
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public CameraResult SetParam(string key, string value)

@@ -5,7 +5,6 @@
     /// </summary>
     public interface ICameraSystem
     {
-
         void Initialize();
 
         void Release();
