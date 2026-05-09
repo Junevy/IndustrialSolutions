@@ -24,26 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="VM.Core">
-      <HintPath>..\..\DLL\Assembly\VM.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="VM.PlatformSDKCS">
-      <HintPath>..\..\DLL\Assembly\VM.PlatformSDKCS.dll</HintPath>
-    </Reference>
-    <Reference Include="VMControls.BaseInterface">
-      <HintPath>..\..\DLL\Assembly\VMControls.BaseInterface.dll</HintPath>
-    </Reference>
-    <Reference Include="VMControls.Interface">
-      <HintPath>..\..\DLL\Assembly\VMControls.Interface.dll</HintPath>
-    </Reference>
-    <Reference Include="VMControls.WPF.Release">
-      <HintPath>..\..\DLL\Assembly\VMControls.WPF.Release.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>
-
-
 
 
 

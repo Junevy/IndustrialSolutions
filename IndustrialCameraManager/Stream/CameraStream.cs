@@ -1,5 +1,4 @@
 ﻿using IndustrialCameraManager.Core;
-using IndustrialCameraManager.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,14 +10,14 @@ namespace IndustrialCameraManager.Stream
 {
     public class CameraStream : ICameraStream
     {
-        private readonly List<Channel<RefCountFrame>> subscribers = new();
+        private readonly List<Channel<IFrame>> subscribers = new();
         private readonly object locker = new();
 
         public int SubscriberCount => subscribers.Count;
 
-        public IDisposable Subscribe(Func<RefCountFrame, Task> handler, int capacity = 5)
+        public IDisposable Subscribe(Func<IFrame, Task> handler, int capacity = 5)
         {
-            var channel = Channel.CreateBounded<RefCountFrame>(new BoundedChannelOptions(capacity)
+            var channel = Channel.CreateBounded<IFrame>(new BoundedChannelOptions(capacity)
             {
                 FullMode = BoundedChannelFullMode.DropOldest
             });
@@ -67,9 +66,8 @@ namespace IndustrialCameraManager.Stream
 
         public void Publish(IFrame frame)
         {
-            var refFrame = new RefCountFrame(frame);
 
-            List<Channel<RefCountFrame>> subs;
+            List<Channel<IFrame>> subs;
 
             lock (locker)
             {
@@ -78,15 +76,15 @@ namespace IndustrialCameraManager.Stream
 
             foreach (var sub in subs)
             {
-                refFrame.AddRef();
+                frame.AddRef();
 
-                if (!sub.Writer.TryWrite(refFrame))
+                if (!sub.Writer.TryWrite(frame))
                 {
-                    refFrame.Dispose(); // 写失败要释放
+                    frame.Dispose(); // 写失败要释放
                 }
             }
 
-            refFrame.Dispose(); // 初始引用释放
+            frame.Dispose(); // 初始引用释放
         }
 
         public void Dispose()

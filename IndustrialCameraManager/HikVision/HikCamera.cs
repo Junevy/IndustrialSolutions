@@ -3,7 +3,6 @@ using IndustrialCameraManager.Stream;
 using MvCameraControl;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace IndustrialCameraManager.HikVision
 {
@@ -110,7 +109,7 @@ namespace IndustrialCameraManager.HikVision
             catch (MvException ex)
             {
                 isGrabbing = false;
-                camera.StreamGrabber.FrameGrabedEvent -= GrabedProcess;
+                StopGrab();
                 return CameraResult.Fail(ex.ErrorCode, ex.Message);
             }
         }
@@ -124,28 +123,28 @@ namespace IndustrialCameraManager.HikVision
             Stream.Publish(frame);
         }
 
-        public async Task GrabAsync(CancellationToken ct = default)
-        {
-            await grabLocker.WaitAsync();
+        //public async Task GrabAsync(CancellationToken ct = default)
+        //{
+        //    await grabLocker.WaitAsync();
 
-            try
-            {
-                ct.ThrowIfCancellationRequested();
+        //    try
+        //    {
+        //        ct.ThrowIfCancellationRequested();
 
-                SetParam("TriggerMode", "Off");
-                await Task.Run(() =>
-                {
-                    int result = camera.StreamGrabber.StartGrabbing();
-                    if (result != MvError.MV_OK)
-                        throw new InvalidOperationException("Start acquisition error");
+        //        SetParam("TriggerMode", "Off");
+        //        //await Task.Run(() =>
+        //        //{
+        //        int result = camera.StreamGrabber.StartGrabbing();
+        //        if (result != MvError.MV_OK)
+        //            throw new InvalidOperationException("Start acquisition error");
 
-                }, ct);
-            }
-            finally
-            {
-                grabLocker.Release();
-            }
-        }
+        //        //}, ct);
+        //    }
+        //    finally
+        //    {
+        //        grabLocker.Release();
+        //    }
+        //}
 
         public void StopGrab()
         {
@@ -165,6 +164,32 @@ namespace IndustrialCameraManager.HikVision
             Close();
             camera.Dispose();
             camera = null;
+        }
+
+        public CameraResult Trigger(string triggerWay)
+        {
+            if (isGrabbing) StopGrab();
+
+            if (string.IsNullOrEmpty(triggerWay)) throw new ArgumentException("Trigger way is invalid");
+
+            camera.StreamGrabber.FrameGrabedEvent -= GrabedProcess;
+            camera.StreamGrabber.FrameGrabedEvent += GrabedProcess;
+
+            return SetParam("TriggerMode", "On");
+        }
+
+        public T GetParam<T>(string paramName)
+        {
+            switch (typeof(T))
+            {
+                case Type t when t == typeof(int):
+                    camera.Parameters.GetIntValue(paramName, out IIntValue intValue);
+                    return (T)(object)intValue.CurValue;
+                case Type t when t == typeof(float):
+                    camera.Parameters.GetFloatValue(paramName, out IFloatValue floatValue);
+                    return (T)(object)floatValue.CurValue;
+                default: throw new NotSupportedException($"Parameter type {typeof(T)} is not supported");
+            }
         }
     }
 }

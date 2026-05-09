@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 
 namespace IndustrialCameraManager.Core
 {
@@ -18,6 +19,9 @@ namespace IndustrialCameraManager.Core
 
         ulong ImageSize { get; }
 
-        //Bitmap ToBitmap();
+        void AddRef();
+
+        Bitmap GetBitmap();
+
     }
 }

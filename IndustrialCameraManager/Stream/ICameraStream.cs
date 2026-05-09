@@ -1,5 +1,4 @@
-﻿using IndustrialCameraManager.Common;
-using IndustrialCameraManager.Core;
+﻿using IndustrialCameraManager.Core;
 using System;
 using System.Threading.Tasks;
 
@@ -11,6 +10,6 @@ namespace IndustrialCameraManager.Stream
 
         void Publish(IFrame frame);
 
-        IDisposable Subscribe(Func<RefCountFrame, Task> handler, int capacity = 5);
+        IDisposable Subscribe(Func<IFrame, Task> handler, int capacity = 5);
     }
 }
