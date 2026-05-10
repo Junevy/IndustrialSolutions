@@ -4,17 +4,19 @@ using System.Collections.Generic;
 
 namespace IndustrialCameraManager.HikVision
 {
+    /// <summary>
+    /// 海康工业相机的Provider类
+    /// 用于：
+    ///     1）枚举海康工业相机；
+    ///     2）创建海康工业相机的实例。
+    /// </summary>
     public class HikCameraProvider : ICameraProvider
     {
-        private static bool isInitialized = false;
+        private readonly ICameraStream stream;
 
-        public HikCameraProvider()
+        public HikCameraProvider(ICameraStream stream)
         {
-            if (!isInitialized)
-            {
-                SDKSystem.Initialize();
-                isInitialized = true;
-            }
+            this.stream = stream;
         }
 
         public ICamera Create(ICameraInfo info)
@@ -22,7 +24,7 @@ namespace IndustrialCameraManager.HikVision
             if (info is not HikCameraInfo hikInfo)
                 throw new System.ArgumentException("Invalid camera info type.");
 
-            return new HikCamera(hikInfo.Native);
+            return new HikCamera(hikInfo.Native, stream);
         }
 
         public ICamera Create(string IpAddress, string netExport)
@@ -30,13 +32,14 @@ namespace IndustrialCameraManager.HikVision
             if (string.IsNullOrWhiteSpace(IpAddress) || string.IsNullOrWhiteSpace(netExport))
                 throw new System.ArgumentException("IP address is invalid");
 
-            return new HikCamera(IpAddress, netExport);
+            return new HikCamera(IpAddress, netExport, stream);
         }
 
         public IEnumerable<ICamera> CreateAll()
         {
             throw new System.NotImplementedException();
         }
+
 
         public IEnumerable<ICameraInfo> Enumerate(CameraType type)
         {
@@ -91,7 +94,11 @@ namespace IndustrialCameraManager.HikVision
                         );
                 }
             }
+        }
 
+        public void Dispose()
+        {
+            stream.Dispose();
         }
     }
 }

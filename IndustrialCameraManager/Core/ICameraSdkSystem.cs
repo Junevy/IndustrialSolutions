@@ -1,9 +1,11 @@
-﻿namespace IndustrialCameraManager.Core
+﻿using System;
+
+namespace IndustrialCameraManager.Core
 {
     /// <summary>
     /// SDK 的初始化与生命周期控制接口
     /// </summary>
-    public interface ICameraSystem
+    public interface ICameraSdkSystem : IDisposable
     {
         void Initialize();
 

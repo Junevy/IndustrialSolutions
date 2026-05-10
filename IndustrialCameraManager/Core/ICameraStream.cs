@@ -1,8 +1,7 @@
-﻿using IndustrialCameraManager.Core;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
-namespace IndustrialCameraManager.Stream
+namespace IndustrialCameraManager.Core
 {
     public interface ICameraStream : IDisposable
     {

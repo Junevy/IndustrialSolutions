@@ -67,8 +67,8 @@
                     Grid.Column="3"
                     Width="130"
                     Height="30"
-                    Command="{Binding SaveBmpCommand}"
-                    Content="Save to Bitmap" />
+                    Command="{Binding StopGrabCommand}"
+                    Content="Stop Grab" />
             </Grid>
 
             <Grid Grid.Row="1">
@@ -83,7 +83,7 @@
                     Grid.Column="0"
                     Width="130"
                     Height="30"
-                    Command="{Binding SaveBmpCommand}"
+                    Command="{Binding CloseCommand}"
                     Content="Close" />
 
 
@@ -91,8 +91,22 @@
                     Grid.Column="1"
                     Width="130"
                     Height="30"
-                    Command="{Binding TestCommand}"
-                    Content="Test Button" />
+                    Command="{Binding LoadSolutionCommand}"
+                    Content="Load Solution" />
+
+                <Button
+                    Grid.Column="2"
+                    Width="130"
+                    Height="30"
+                    Command="{Binding LoadSolutionCommand}"
+                    Content="Run Onece" />
+
+                <Button
+                    Grid.Column="3"
+                    Width="130"
+                    Height="30"
+                    Command="{Binding SoftTriggerCommand}"
+                    Content="Soft Trigger" />
             </Grid>
 
             <Grid Grid.Row="2">

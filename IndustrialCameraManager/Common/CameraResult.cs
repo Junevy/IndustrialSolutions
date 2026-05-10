@@ -1,6 +1,6 @@
 ﻿using MvCameraControl;
 
-namespace IndustrialCameraManager.Core
+namespace IndustrialCameraManager.Common
 {
     public class CameraResult
     {

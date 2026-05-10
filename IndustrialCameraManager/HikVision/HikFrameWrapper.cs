@@ -65,9 +65,5 @@ namespace IndustrialCameraManager.HikVision
             return native.Image.ToBitmap();
         }
 
-        //public T GetInner<T>()
-        //{
-        //    return (T)native;
-        //}
     }
 }

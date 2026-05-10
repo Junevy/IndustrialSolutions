@@ -35,6 +35,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="MvCameraControl.Net, Version=3.4.0.1, Culture=neutral, PublicKeyToken=52fddfb3f94be800, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\MvCameraControl.Net.dll</HintPath>
@@ -60,25 +66,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\CameraManager.cs" />
+    <Compile Include="Common\CameraService.cs" />
     <Compile Include="Core\ImagePixelFormat.cs" />
-    <Compile Include="Core\CameraResult.cs" />
+    <Compile Include="Common\CameraResult.cs" />
     <Compile Include="Core\CameraType.cs" />
     <Compile Include="Core\ICamera.cs" />
-    <Compile Include="Core\ICameraFactory.cs" />
     <Compile Include="Core\ICameraInfo.cs" />
     <Compile Include="Core\ICameraProvider.cs" />
-    <Compile Include="Core\ICameraSystem.cs" />
+    <Compile Include="Core\ICameraSdkSystem.cs" />
     <Compile Include="Core\IFrame.cs" />
     <Compile Include="Core\ILineScanCamera.cs" />
-    <Compile Include="Extensions\FrameExtensions.cs" />
+    <Compile Include="Extensions\CameraExtensions.cs" />
+    <Compile Include="HikVision\HikCameraSdkSystem.cs" />
     <Compile Include="Stream\CameraStream.cs" />
     <Compile Include="HikVision\HikFrameWrapper.cs" />
     <Compile Include="HikVision\HikCamera.cs" />
     <Compile Include="HikVision\HikCameraInfo.cs" />
     <Compile Include="HikVision\HikCameraProvider.cs" />
-    <Compile Include="Common\RefCountFrame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Stream\ICameraStream.cs" />
+    <Compile Include="Core\ICameraStream.cs" />
     <Compile Include="Stream\Subscription.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IndustrialCameraManager.Common;
+using System;
 
 namespace IndustrialCameraManager.Core
 {
@@ -10,8 +11,6 @@ namespace IndustrialCameraManager.Core
 
         CameraResult Close();
 
-        //Task GrabAsync(CancellationToken ct = default);
-
         CameraResult Grab();
 
         CameraResult Trigger(string triggerWay);
@@ -19,6 +18,7 @@ namespace IndustrialCameraManager.Core
         void StopGrab();
 
         CameraResult SetParam(string key, string value);
+        CameraResult SetParam(string value);
 
         T GetParam<T>(string paramName);
 

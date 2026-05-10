@@ -4,6 +4,7 @@
     {
         GigE,
         Usb,
-        GenTL
+        GenTL,
+        ALL
     }
 }
