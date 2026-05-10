@@ -84,6 +84,10 @@ namespace IndustrialCameraManager.Common
         {
             foreach (var cam in cameras.Values) cam.Dispose();
             cameras.Clear();
+
+            CamInfoList.Clear();
+            CamInfoList = null;
+
             provider.Dispose();
         }
     }

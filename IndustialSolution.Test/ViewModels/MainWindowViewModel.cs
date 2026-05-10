@@ -36,15 +36,28 @@ namespace IndustialSolution.Test.ViewModels
         [RelayCommand]
         public void OpenCamera()
         {
+            if (SelectedCameraInfo == null)
+            {
+                MessageBox.Show("Select a camera first");
+                return;
+            }
+
             var result = cameraService.OpenCamera(SelectedCameraInfo);
             if (!result.IsSuccess)
+            {
                 MessageBox.Show(result.Message);
+                return;
+            }
+
+            var subResult = cameraService.SubscribeFrameStream(SelectedCameraInfo.SerialNumber, "saveImg", ProcessFrame);
+            if (!subResult)
+                MessageBox.Show("Subscribe the camera frame stream error");
         }
 
         [RelayCommand]
         public void StartGrab()
         {
-            var result = cameraService.StartGrab(SelectedCameraInfo?.SerialNumber, ProcessFrame);
+            var result = cameraService.StartGrab(SelectedCameraInfo?.SerialNumber);
             if (!result.IsSuccess)
                 MessageBox.Show(result.Message);
         }
@@ -64,11 +77,20 @@ namespace IndustialSolution.Test.ViewModels
         }
 
         [RelayCommand]
-        public void SoftTrigger()
+        public void SoftTriggerOnece()
         {
-            var result = cameraService.SoftTrigger(SelectedCameraInfo?.SerialNumber);
+            var result = cameraService.SetTriggerMode(SelectedCameraInfo?.SerialNumber, "Software");
             if (!result.IsSuccess)
+            {
                 MessageBox.Show(result.Message);
+                return;
+            }
+
+            StartGrab();
+
+            var exeResult = cameraService.ExecuteCommand(selectedCameraInfo?.SerialNumber, "TriggerSoftware");
+            if (!exeResult.IsSuccess)
+                MessageBox.Show(exeResult.Message);
         }
 
         [RelayCommand]

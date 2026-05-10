@@ -9,6 +9,9 @@ namespace IndustrialCameraManager.Core
 
         void Publish(IFrame frame);
 
-        IDisposable Subscribe(Func<IFrame, Task> handler, int capacity = 5);
+        void Subscribe(string key, Func<IFrame, Task> handler, int capacity = 5);
+
+        bool Unsubscribe(string key);
+
     }
 }

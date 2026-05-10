@@ -1,5 +1,5 @@
 ﻿using IndustrialCameraManager.Core;
-using IndustrialCameraManager.HikVision;
+using IndustrialCameraManager.Stream;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -13,16 +13,19 @@ namespace IndustrialCameraManager.Common
     public class CameraService : IDisposable
     {
         private const string errorMsg = "Camera not open or found";
-        private readonly CameraManager manager;
-        public ObservableCollection<ICameraInfo> CamInfoList => manager.CamInfoList;
+        private readonly CameraManager cameraManager;
+        private readonly StreamManager streamManager;
+        public ObservableCollection<ICameraInfo> CamInfoList => cameraManager.CamInfoList;
 
-        public CameraService(CameraManager manager)
+        public CameraService(CameraManager cameraManager, StreamManager streamManager)
         {
-            this.manager = manager;
+            this.cameraManager = cameraManager;
+            this.streamManager = streamManager;
         }
+
         public void EnumerateCameras(CameraType type = CameraType.ALL)
         {
-            manager.EnumerateCameras(type);
+            cameraManager.EnumerateCameras(type);
         }
 
         public CameraResult OpenCamera(ICameraInfo info)
@@ -32,7 +35,7 @@ namespace IndustrialCameraManager.Common
 
             try
             {
-                var camera = manager.GetOrCreate(info);
+                var camera = cameraManager.GetOrCreate(info);
                 if (camera.IsOpen)
                     return CameraResult.Fail(-1, "The camera has been connected");
 
@@ -45,21 +48,33 @@ namespace IndustrialCameraManager.Common
             }
         }
 
-        public CameraResult StartGrab(string serialNumber, Func<IFrame, Task> processFrame = null)
+        public bool SubscribeFrameStream(string streamKey, string subKey, Func<IFrame, Task> processFrame)
         {
-            var result = manager.GetCamera(serialNumber ?? "", out var camera);
+            if (processFrame == null) return false;
+            if (string.IsNullOrEmpty(streamKey) || string.IsNullOrEmpty(subKey)) return false;
+            if (!streamManager.GetStream(streamKey, out var stream)) return false;
+
+            stream.Subscribe(subKey, processFrame);
+            return true;
+        }
+
+        public bool UnsubscribeFrameStream(string streamKey, string subKey)
+        {
+            if (!string.IsNullOrEmpty(streamKey) || !string.IsNullOrEmpty(subKey)) return false;
+            if (!streamManager.GetStream(streamKey, out var stream)) return false;
+
+            return stream.Unsubscribe(subKey);
+        }
+
+        public CameraResult StartGrab(string serialNumber)
+        {
+            var result = cameraManager.GetCamera(serialNumber ?? "", out var camera);
 
             if (!result || !camera.IsOpen)
                 return CameraResult.Fail(-1, errorMsg);
 
             try
             {
-                if (processFrame != null)
-                {
-                    if (camera is HikCamera hikCamera)
-                        hikCamera.Stream.Subscribe(processFrame);
-                }
-
                 return camera.Grab();
             }
             catch (Exception e)
@@ -71,7 +86,7 @@ namespace IndustrialCameraManager.Common
 
         public CameraResult StopGrab(string serialNumber)
         {
-            var result = manager.GetCamera(serialNumber ?? "", out var camera);
+            var result = cameraManager.GetCamera(serialNumber ?? "", out var camera);
             if (!result || !camera.IsOpen)
                 return CameraResult.Fail(-1, errorMsg);
 
@@ -81,26 +96,32 @@ namespace IndustrialCameraManager.Common
 
         public CameraResult Close(string serialNumber)
         {
-            var result = manager.GetCamera(serialNumber ?? "", out var camera);
+            var result = cameraManager.GetCamera(serialNumber ?? "", out var camera);
             if (!result)
                 return CameraResult.Fail(-1, errorMsg);
 
             return camera.Close();
         }
 
-        public CameraResult SoftTrigger(string serialNumber)
+        public CameraResult SetTriggerMode(string serialNumber, string triggerWay)
         {
-            var result = manager.GetCamera(serialNumber ?? "", out var camera);
+            var result = cameraManager.GetCamera(serialNumber ?? "", out var camera);
             if (!result || !camera.IsOpen)
                 return CameraResult.Fail(-1, errorMsg);
 
-            var setResult = camera.SetParam("TriggerSource", "Software");
-            if (!setResult.IsSuccess)
-                return setResult;
-
-            return camera.SetParam("TriggerSoftware");
+            var setResult = camera.SetTrigger(triggerWay, true);
+            return setResult;
         }
 
+        public CameraResult ExecuteCommand(string serialNumber, string command)
+        {
+            var result = cameraManager.GetCamera(serialNumber ?? "", out var camera);
+            if (!result || !camera.IsOpen)
+                return CameraResult.Fail(-1, errorMsg);
+
+            var setResult = camera.ExecuteCommand(command);
+            return setResult;
+        }
 
         public void DisposeCamera()
         {
@@ -108,7 +129,8 @@ namespace IndustrialCameraManager.Common
         }
         public void Dispose()
         {
-            manager.Dispose();
+            cameraManager.Dispose();
+            streamManager.Dispose();
         }
     }
 }

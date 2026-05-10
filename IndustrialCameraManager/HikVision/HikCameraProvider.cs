@@ -1,4 +1,6 @@
-﻿using IndustrialCameraManager.Core;
+﻿using IndustrialCameraManager.Common;
+using IndustrialCameraManager.Core;
+using IndustrialCameraManager.Stream;
 using MvCameraControl;
 using System.Collections.Generic;
 
@@ -12,11 +14,11 @@ namespace IndustrialCameraManager.HikVision
     /// </summary>
     public class HikCameraProvider : ICameraProvider
     {
-        private readonly ICameraStream stream;
+        private readonly StreamManager manager;
 
-        public HikCameraProvider(ICameraStream stream)
+        public HikCameraProvider(StreamManager manager)
         {
-            this.stream = stream;
+            this.manager = manager;
         }
 
         public ICamera Create(ICameraInfo info)
@@ -24,6 +26,7 @@ namespace IndustrialCameraManager.HikVision
             if (info is not HikCameraInfo hikInfo)
                 throw new System.ArgumentException("Invalid camera info type.");
 
+            var stream = manager.GetOrCreateStream(info.SerialNumber);
             return new HikCamera(hikInfo.Native, stream);
         }
 
@@ -32,6 +35,7 @@ namespace IndustrialCameraManager.HikVision
             if (string.IsNullOrWhiteSpace(IpAddress) || string.IsNullOrWhiteSpace(netExport))
                 throw new System.ArgumentException("IP address is invalid");
 
+            var stream = manager.GetOrCreateStream(IpAddress);
             return new HikCamera(IpAddress, netExport, stream);
         }
 
@@ -39,7 +43,6 @@ namespace IndustrialCameraManager.HikVision
         {
             throw new System.NotImplementedException();
         }
-
 
         public IEnumerable<ICameraInfo> Enumerate(CameraType type)
         {
@@ -98,7 +101,7 @@ namespace IndustrialCameraManager.HikVision
 
         public void Dispose()
         {
-            stream.Dispose();
+            manager.Dispose();
         }
     }
 }

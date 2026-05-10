@@ -15,7 +15,7 @@ namespace IndustrialCameraManager.Extensions
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
-            services.TryAddSingleton<ICameraStream, CameraStream>();
+            services.TryAddSingleton<StreamManager>();
             services.TryAddSingleton<ICameraProvider, HikCameraProvider>();
             services.TryAddSingleton<CameraManager>();
             services.TryAddSingleton<CameraService>();

@@ -1,6 +1,5 @@
 ﻿using IndustrialCameraManager.Common;
 using IndustrialCameraManager.Core;
-using IndustrialCameraManager.Stream;
 using MvCameraControl;
 using System;
 
@@ -9,19 +8,17 @@ namespace IndustrialCameraManager.HikVision
     public class HikCamera : ICamera
     {
         private bool isCreate = false;
-        public bool IsGrabbing { get; private set; } = false;
+        private bool isGrabbing = false;
 
-        public bool IsOpen => (camera?.IsConnected) ?? false;   // The value is true When Camera.Open()
         private IDevice camera;
         private readonly IDeviceInfo deviceInfo;
-        //private readonly SemaphoreSlim grabLocker = new(1, 1);
-
-        public ICameraStream Stream { get; private set; }
+        private readonly ICameraStream stream;
+        public bool IsOpen => (camera?.IsConnected) ?? false;   // The value is true When Camera.Open()
 
         public HikCamera(IDeviceInfo info, ICameraStream cameraStream)
         {
             this.deviceInfo = info;
-            this.Stream = cameraStream;
+            this.stream = cameraStream;
         }
 
         public HikCamera(string ipAddress, string netExport, ICameraStream cameraStream)
@@ -29,7 +26,7 @@ namespace IndustrialCameraManager.HikVision
             try
             {
                 this.camera = DeviceFactory.CreateDeviceByIp(ipAddress, netExport);
-                this.Stream = cameraStream;
+                this.stream = cameraStream;
                 isCreate = true;
             }
             catch (MvException)
@@ -69,6 +66,8 @@ namespace IndustrialCameraManager.HikVision
                 //    usbDevice.SetSyncTimeOut(1000);
                 //}
 
+                camera.StreamGrabber.FrameGrabedEvent -= ProcessFrameCallBack;
+                camera.StreamGrabber.FrameGrabedEvent += ProcessFrameCallBack;
                 return CameraResult.Success(result);
             }
             catch (MvException me)
@@ -85,51 +84,49 @@ namespace IndustrialCameraManager.HikVision
         {
             StopGrab();
             int result = camera.Close();
+            camera.StreamGrabber.FrameGrabedEvent -= ProcessFrameCallBack;
             return CameraResult.Result(result == MvError.MV_OK, result);
         }
 
         public CameraResult Grab()
         {
-            if (IsGrabbing)
+            if (isGrabbing)
                 return CameraResult.Fail(-1, "Camera is already grabbing");
 
-            var result = SetParam("TriggerMode", "Off");
-            if (!result.IsSuccess)
-            {
-                IsGrabbing = false;
-                return result;
-            }
+            //var result = SetParam("TriggerMode", "Off");
+            //if (!result.IsSuccess)
+            //{
+            //    isGrabbing = false;
+            //    return result;
+            //}
 
             try
             {
-                camera.StreamGrabber.FrameGrabedEvent -= GrabedProcess;
-                camera.StreamGrabber.FrameGrabedEvent += GrabedProcess;
                 var grabResult = camera.StreamGrabber.StartGrabbing();
-                IsGrabbing = grabResult == MvError.MV_OK;
-                return CameraResult.Result(IsGrabbing, grabResult);
+                isGrabbing = grabResult == MvError.MV_OK;
+                return CameraResult.Result(isGrabbing, grabResult);
             }
             catch (MvException ex)
             {
-                IsGrabbing = false;
+                isGrabbing = false;
                 StopGrab();
                 return CameraResult.Fail(ex.ErrorCode, ex.Message);
             }
         }
 
-        private void GrabedProcess(object sender, FrameGrabbedEventArgs e)
+        private void ProcessFrameCallBack(object sender, FrameGrabbedEventArgs e)
         {
             var clonedFrame = (IFrameOut)e.FrameOut.Clone();
             camera.StreamGrabber.FreeImageBuffer(e.FrameOut);   // copy完毕后释放原始帧
 
             IFrame frame = new HikFrameWrapper(clonedFrame);
-            Stream.Publish(frame);
+            stream.Publish(frame);
         }
 
         public void StopGrab()
         {
             camera.StreamGrabber.StopGrabbing();
-            camera.StreamGrabber.FrameGrabedEvent -= GrabedProcess;
-            IsGrabbing = false;
+            isGrabbing = false;
         }
 
         public CameraResult SetParam(string key, string value)
@@ -138,10 +135,10 @@ namespace IndustrialCameraManager.HikVision
             return CameraResult.Result(result == MvError.MV_OK, result);
         }
 
-        public CameraResult SetParam(string value)
+        public CameraResult ExecuteCommand(string command)
         {
-            int result = camera.Parameters.SetCommandValue(value);
-            return CameraResult.Result(result != MvError.MV_OK, result);
+            int result = camera.Parameters.SetCommandValue(command);
+            return CameraResult.Result(result == MvError.MV_OK, result);
         }
 
         public void Dispose()
@@ -152,16 +149,19 @@ namespace IndustrialCameraManager.HikVision
             camera = null;
         }
 
-        public CameraResult Trigger(string triggerWay)
+        public CameraResult SetTrigger(string triggerWay, bool isGrab)
         {
-            if (IsGrabbing) StopGrab();
+            if (isGrabbing) StopGrab();
 
-            if (string.IsNullOrEmpty(triggerWay)) throw new ArgumentException("Trigger way is invalid");
+            if (string.IsNullOrEmpty(triggerWay))
+                return CameraResult.Fail(-1, "Check the trigger source or trigger way");
 
-            camera.StreamGrabber.FrameGrabedEvent -= GrabedProcess;
-            camera.StreamGrabber.FrameGrabedEvent += GrabedProcess;
+            string grabMode = isGrab ? "On" : "Off";
+            var result = SetParam("TriggerMode", grabMode);
+            if (!result.IsSuccess)
+                return result;
 
-            return SetParam("TriggerMode", "On");
+            return SetParam("TriggerSource", triggerWay);
         }
 
         public T GetParam<T>(string paramName)

@@ -1,7 +1,6 @@
 ﻿using IndustrialCameraManager.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -10,26 +9,22 @@ namespace IndustrialCameraManager.Stream
 {
     public class CameraStream : ICameraStream
     {
-        private readonly List<Channel<IFrame>> subscribers = new();
-        private readonly object locker = new();
-
+        private readonly ConcurrentDictionary<string, CameraStreamSuber> subscribers = new();
         public int SubscriberCount => subscribers.Count;
 
-        public IDisposable Subscribe(Func<IFrame, Task> handler, int capacity = 5)
+        public void Subscribe(string key, Func<IFrame, Task> handler, int capacity = 5)
         {
-            var channel = Channel.CreateBounded<IFrame>(new BoundedChannelOptions(capacity)
-            {
-                FullMode = BoundedChannelFullMode.DropOldest
-            });
+            var channel = Channel.CreateBounded<IFrame>(
+                new BoundedChannelOptions(capacity)
+                {
+                    FullMode = BoundedChannelFullMode.DropOldest
+                });
 
-            lock (locker)
-            {
-                subscribers.Add(channel);
-            }
+            if (subscribers.TryRemove(key, out var old))
+                old.Dispose();
 
             var cts = new CancellationTokenSource();
-
-            Task.Run(async () =>
+            var worker = Task.Run(async () =>
             {
                 try
                 {
@@ -41,6 +36,10 @@ namespace IndustrialCameraManager.Stream
                             {
                                 await handler(frame);
                             }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
                             finally
                             {
                                 frame.Dispose();
@@ -50,52 +49,40 @@ namespace IndustrialCameraManager.Stream
                 }
                 catch (OperationCanceledException) { }
             });
-
-            return new Subscription(() =>
-            {
-                cts.Cancel();
-
-                lock (locker)
-                {
-                    subscribers.Remove(channel);
-                }
-
-                channel.Writer.TryComplete();
-            });
+            subscribers[key] = new CameraStreamSuber(channel, cts, worker);
         }
 
         public void Publish(IFrame frame)
         {
-
-            List<Channel<IFrame>> subs;
-
-            lock (locker)
-            {
-                subs = subscribers.ToList(); // 拷贝一份
-            }
-
-            foreach (var sub in subs)
+            foreach (var sub in subscribers.Values)
             {
                 frame.AddRef();
 
-                if (!sub.Writer.TryWrite(frame))
-                {
+                if (!sub.Channel.Writer.TryWrite(frame))
                     frame.Dispose(); // 写失败要释放
-                }
             }
-
             frame.Dispose(); // 初始引用释放
+        }
+
+        public bool Unsubscribe(string key)
+        {
+            if (subscribers.TryRemove(key, out var suber))
+            {
+                suber.Dispose();
+                return true;
+            }
+            return false;
         }
 
         public void Dispose()
         {
-            lock (locker)
+            foreach (var sub in subscribers.Values)
             {
-                foreach (var sub in subscribers)
-                {
-                    sub.Writer.TryComplete();
-                }
+                sub.Dispose();
             }
+            subscribers.Clear();
+
         }
     }
 }
+
