@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+		<!--<Reference Include="..\..\DLL\Assembly\*.dll" />-->
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="VM.Core">
+			<HintPath>..\..\DLL\Assembly\VM.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="VM.PlatformSDKCS">
+			<HintPath>..\..\DLL\Assembly\VM.PlatformSDKCS.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.BaseInterface">
+			<HintPath>..\..\DLL\Assembly\VMControls.BaseInterface.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.Interface">
+			<HintPath>..\..\DLL\Assembly\VMControls.Interface.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.RenderInterface">
+			<HintPath>..\..\DLL\Assembly\VMControls.RenderInterface.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.WPF.Release">
+			<HintPath>..\..\DLL\Assembly\VMControls.WPF.Release.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+</Project>
+
+
+

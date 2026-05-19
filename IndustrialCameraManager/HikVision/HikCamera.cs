@@ -93,13 +93,6 @@ namespace IndustrialCameraManager.HikVision
             if (isGrabbing)
                 return CameraResult.Fail(-1, "Camera is already grabbing");
 
-            //var result = SetParam("TriggerMode", "Off");
-            //if (!result.IsSuccess)
-            //{
-            //    isGrabbing = false;
-            //    return result;
-            //}
-
             try
             {
                 var grabResult = camera.StreamGrabber.StartGrabbing();
@@ -145,6 +138,7 @@ namespace IndustrialCameraManager.HikVision
         {
             Close();
             isCreate = false;
+            isGrabbing = false;
             camera.Dispose();
             camera = null;
         }

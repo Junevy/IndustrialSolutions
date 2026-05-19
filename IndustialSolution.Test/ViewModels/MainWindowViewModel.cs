@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ImageSourceModuleCs;
 using IndustrialCameraManager.Common;
 using IndustrialCameraManager.Core;
 using System.Collections.ObjectModel;
 using System.Windows;
+using VM.Core;
+using VM.PlatformSDKCS;
 using VMControls.WPF.Release;
 
 namespace IndustialSolution.Test.ViewModels
@@ -23,8 +26,6 @@ namespace IndustialSolution.Test.ViewModels
         public MainWindowViewModel(CameraService cameraService)
         {
             this.cameraService = cameraService;
-            VmRender.ChangeMenuVisibility(true);
-            VmRender.ChangeTopBarVisibility(false);
         }
 
         [RelayCommand]
@@ -79,6 +80,8 @@ namespace IndustialSolution.Test.ViewModels
         [RelayCommand]
         public void SoftTriggerOnece()
         {
+            VmSolution.Load(@"D:\Desktop\WorkSpace\VMDevelop\OCR_F166.sol");
+
             var result = cameraService.SetTriggerMode(SelectedCameraInfo?.SerialNumber, "Software");
             if (!result.IsSuccess)
             {
@@ -108,7 +111,44 @@ namespace IndustialSolution.Test.ViewModels
             try
             {
 
-                frame.GetBitmap().Save(@"D:\Desktop\WorkSpace\VMDevelop\test.bmp");
+
+
+                //frame.GetBitmap().Save(@"D:\Desktop\WorkSpace\VMDevelop\test.bmp");
+
+                ImageBaseData image =
+                    new ImageBaseData(frame.Data, (uint)frame.Data.Length, (int)frame.Width, (int)frame.Height, 17825795);
+
+                var imageSource = VmSolution.Instance["流程1.图像源1"] as ImageSourceModuleTool;
+
+                imageSource.ModuParams.ImageSourceType = ImageSourceParam.ImageSourceTypeEnum.SDK;
+
+
+                imageSource.SetImageData(image);
+
+                //imageSource.SetImagePath(@"D:\Desktop\WorkSpace\VMDevelop\test.bmp");
+
+
+                //imageSource?.Run();
+
+          
+
+                //imageSource?.ModuParams.SetInputImage(inputImageData);
+
+
+                //imageSource.SetImageData(data);
+
+                VmSolution.Instance.Run();
+
+                //VmSolution.Instance.SyncRun();
+
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    VmRender.ModuleSource = imageSource;
+
+                });
+
+
+
 
             }
             catch (Exception)
@@ -120,7 +160,11 @@ namespace IndustialSolution.Test.ViewModels
         [RelayCommand]
         public void LoadSolution()
         {
-            VM.Core.VmSolution.Load(@"D:\Desktop\WorkSpace\VMDevelop\OCR_F166.sol");
+            //VM.Core.VmSolution.Load(@"D:\Desktop\WorkSpace\VMDevelop\OCR_F166.sol");
+
+            //var imageSource = VmSolution.Instance["流程1.图像源1"] as ImageSourceModuleTool;
+            //imageSource.SetImageData
+            ;
         }
     }
 }

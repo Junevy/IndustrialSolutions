@@ -110,7 +110,7 @@
             </Grid>
 
             <Grid Grid.Row="2">
-                <ContentControl Content="{Binding VmRender}" />
+                <ContentControl Content="{Binding VmMain}" />
 
             </Grid>
 
