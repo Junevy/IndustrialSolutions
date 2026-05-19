@@ -4,7 +4,7 @@ namespace VisionServices.Controls
 {
     public class VmControls
     {
-        public VmRenderControl VmRender { get; set; } = new();
+        public VmRenderControl ImageRender { get; set; } = new();
 
         public VmMainViewConfigControl VmMainView { get; set; } = new();
 

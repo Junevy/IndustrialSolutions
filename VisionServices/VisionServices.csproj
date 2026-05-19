@@ -8,12 +8,28 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-		<!--<Reference Include="..\..\DLL\Assembly\*.dll" />-->
 	</ItemGroup>
 
 	<ItemGroup>
+		<!--<Reference Include="VM.Core">
+			<HintPath>..\..\DLL\Assembly\VM.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="VM.PlatformSDKCS">
+			<HintPath>..\..\DLL\Assembly\VM.PlatformSDKCS.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.BaseInterface">
+			<HintPath>..\..\DLL\Assembly\VMControls.BaseInterface.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.Interface">
+			<HintPath>..\..\DLL\Assembly\VMControls.Interface.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.RenderInterface">
+			<HintPath>..\..\DLL\Assembly\VMControls.RenderInterface.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.WPF.Release">
+			<HintPath>..\..\DLL\Assembly\VMControls.WPF.Release.dll</HintPath>
+		</Reference>-->
 		<Reference Include="VM.Core">
 			<HintPath>..\..\DLL\Assembly\VM.Core.dll</HintPath>
 		</Reference>
@@ -31,6 +47,504 @@
 		</Reference>
 		<Reference Include="VMControls.WPF.Release">
 			<HintPath>..\..\DLL\Assembly\VMControls.WPF.Release.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSBlobFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSBlobFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSBlobFindLabelsModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSBlobFindLabelsModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSBoxMergeModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSBoxMergeModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSBoxFilterModuleCs">
+			<HintPath>..\..\DLL\Assembly\IMVSBoxFilterModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSBoxOverlapCalculationModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSBoxOverlapCalculationModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnClassifyModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnClassifyModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnClassifyModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnClassifyModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnSingleCharDetectModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnSingleCharDetectModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnSingleCharDetectModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnSingleCharDetectModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnFlawModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnFlawModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnFlawModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnFlawModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnRetrievalModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnRetrievalModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnRetrievalModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnRetrievalModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnCharDetectModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnCharDetectModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnCharDetectModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnCharDetectModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSOcrDlModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSOcrDlModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSOcrDlModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSOcrDlModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnInstanceSegmentModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnInstanceSegmentModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnInstanceSegmentModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnInstanceSegmentModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnInspectModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnInspectModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnInspectModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnInspectModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnUnSupervisedModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnUnSupervisedModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnDetectModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnDetectModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnDetectModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnDetectModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnCodeRecgModuCCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnCodeRecgModuCCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCnnCodeRecgModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCnnCodeRecgModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="ImageCollectDalsaModuCs">
+			<HintPath>..\..\DLL\Assembly\ImageCollectDalsaModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="ImageCollectIKModuCs">
+			<HintPath>..\..\DLL\Assembly\ImageCollectIKModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSNImageCalibModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSNImageCalibModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSNPointCalibModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSNPointCalibModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSMedianLineFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSMedianLineFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVS2dBcrModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVS2dBcrModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVS2dArrayCorrectModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVS2dArrayCorrectModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSIntensityMeasureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSIntensityMeasureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSAffineTransformModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSAffineTransformModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSFixtureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSFixtureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSPixelCountModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSPixelCountModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="LightModuleCs">
+			<HintPath>..\..\DLL\Assembly\LightModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="LightControlCs">
+			<HintPath>..\..\DLL\Assembly\LightControlCs.dll</HintPath>
+		</Reference>
+		<Reference Include="GlobalVariableModuleCs">
+			<HintPath>..\..\DLL\Assembly\GlobalVariableModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="GlobalCameraModuleCs">
+			<HintPath>..\..\DLL\Assembly\GlobalCameraModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="GeometryCreateCs">
+			<HintPath>..\..\DLL\Assembly\GeometryCreateCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSGeometricTransformModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSGeometricTransformModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="BranchStringCpmLCs">
+			<HintPath>..\..\DLL\Assembly\BranchStringCpmLCs.dll</HintPath>
+		</Reference>
+		<Reference Include="BranchModule_STDCs">
+			<HintPath>..\..\DLL\Assembly\BranchModule_STDCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSDivideImageModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSDivideImageModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="DataAssembleModuleCs">
+			<HintPath>..\..\DLL\Assembly\DataAssembleModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="DataAnalysisModuleCs">
+			<HintPath>..\..\DLL\Assembly\DataAnalysisModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSScaleTransformModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSScaleTransformModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSSinglePointAlignModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSSinglePointAlignModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="SinglePointGrabModuCs">
+			<HintPath>..\..\DLL\Assembly\SinglePointGrabModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="SinglePointMapAlignModuCs">
+			<HintPath>..\..\DLL\Assembly\SinglePointMapAlignModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="SinglePointRectifyModuCs">
+			<HintPath>..\..\DLL\Assembly\SinglePointRectifyModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCaliperModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCaliperModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="SendDatasModuleCs">
+			<HintPath>..\..\DLL\Assembly\SendDatasModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="CalculatorModuleCs">
+			<HintPath>..\..\DLL\Assembly\CalculatorModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSQuadrangleFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSQuadrangleFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSBinaryModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSBinaryModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageFixtureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageFixtureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageEnhanceModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageEnhanceModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageNormlizeModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageNormlizeModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImgStitchCalibModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImgStitchCalibModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="ImageSourceModuleCs">
+			<HintPath>..\..\DLL\Assembly\ImageSourceModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageFilterModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageFilterModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageCorrectManualModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageCorrectManualModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageCombineProcessModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageCombineProcessModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageResizeModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageResizeModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageMathModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageMathModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSMarkFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSMarkFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="GraphicsSetModuleCs">
+			<HintPath>..\..\DLL\Assembly\GraphicsSetModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSC2CMeasureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSC2CMeasureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCircleEdgePairInspModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCircleEdgePairInspModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCircleEdgeInspModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCircleEdgeInspModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCircleFitModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCircleFitModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCircleFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCircleFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSPolarUnwarpModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSPolarUnwarpModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="CoordinateTransformCs">
+			<HintPath>..\..\DLL\Assembly\CoordinateTransformCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSVerticalLineFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSVerticalLineFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="Apps.ColorFun">
+			<HintPath>..\..\DLL\Assembly\Apps.ColorFun.dll</HintPath>
+		</Reference>
+		<Reference Include="VM.PlatformSDKCS">
+			<HintPath>..\..\DLL\Assembly\VM.PlatformSDKCS.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.BaseInterface">
+			<HintPath>..\..\DLL\Assembly\VMControls.BaseInterface.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.WPF.Release">
+			<HintPath>..\..\DLL\Assembly\VMControls.WPF.Release.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.Interface">
+			<HintPath>..\..\DLL\Assembly\VMControls.Interface.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.RenderInterface">
+			<HintPath>..\..\DLL\Assembly\VMControls.RenderInterface.dll</HintPath>
+		</Reference>
+		<Reference Include="VMControls.Winform.Release">
+			<HintPath>..\..\DLL\Assembly\VMControls.Winform.Release.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSMultiImageFusionModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSMultiImageFusionModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="ImageAcquisitionModuleCs">
+			<HintPath>..\..\DLL\Assembly\ImageAcquisitionModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSMultiLabelFilterModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSMultiLabelFilterModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSMultiLineFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSMultiLineFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="StringCompareModuleCs">
+			<HintPath>..\..\DLL\Assembly\StringCompareModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSMarkInspModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSMarkInspModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSMarkInspModuVACs">
+			<HintPath>..\..\DLL\Assembly\IMVSMarkInspModuVACs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSOcrModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSOcrModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSFrameMeanModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSFrameMeanModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="TranslationCalibModuCs">
+			<HintPath>..\..\DLL\Assembly\TranslationCalibModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSPairLineModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSPairLineModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSParallelCalculateModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSParallelCalculateModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSInspectModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSInspectModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageMorphModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageMorphModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSFastFeatureMatchModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSFastFeatureMatchModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSRegionCopyModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSRegionCopyModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="ReadDatasModuleCs">
+			<HintPath>..\..\DLL\Assembly\ReadDatasModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="DataQueueModuleCs">
+			<HintPath>..\..\DLL\Assembly\DataQueueModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="DataSetModuleCs">
+			<HintPath>..\..\DLL\Assembly\DataSetModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="SaveTextModuleCs">
+			<HintPath>..\..\DLL\Assembly\SaveTextModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="RotateCalibModuCs">
+			<HintPath>..\..\DLL\Assembly\RotateCalibModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSRotateCalculateModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSRotateCalculateModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSMapCalibModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSMapCalibModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IfBranchModuleCs">
+			<HintPath>..\..\DLL\Assembly\IfBranchModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IfModuleCs">
+			<HintPath>..\..\DLL\Assembly\IfModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSBcrModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSBcrModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="ReadCalibFileModuCs">
+			<HintPath>..\..\DLL\Assembly\ReadCalibFileModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCalibBoardCalibModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCalibBoardCalibModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCalibTransformModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCalibTransformModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="FormatModuleCs">
+			<HintPath>..\..\DLL\Assembly\FormatModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageSharpnessModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageSharpnessModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSGrayMatchModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSGrayMatchModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSGrayMatchModuVACs">
+			<HintPath>..\..\DLL\Assembly\IMVSGrayMatchModuVACs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSP2CMeasureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSP2CMeasureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSP2PMeasureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSP2PMeasureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSP2LMeasureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSP2LMeasureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="PointSetMODU_STDCs">
+			<HintPath>..\..\DLL\Assembly\PointSetMODU_STDCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSMultiPointAlignModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSMultiPointAlignModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageCalibModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageCalibModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSImageCorrectCalibModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSImageCorrectCalibModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSTargetTrackModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSTargetTrackModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSHistToolModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSHistToolModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSLineEdgePairInspModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSLineEdgePairInspModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSLineFitModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSLineFitModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSLineFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSLineFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSLineFindGroupModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSLineFindGroupModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSLineEdgeInspModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSLineEdgeInspModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="CameraIOModuleCs">
+			<HintPath>..\..\DLL\Assembly\CameraIOModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCameraMapModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCameraMapModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSRectFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSRectFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSL2CMeasureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSL2CMeasureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSLineAlignModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSLineAlignModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSL2LMeasureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSL2LMeasureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSGroupCs">
+			<HintPath>..\..\DLL\Assembly\IMVSGroupCs.dll</HintPath>
+		</Reference>
+		<Reference Include="ImageBufferModuleCs">
+			<HintPath>..\..\DLL\Assembly\ImageBufferModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="TimeStatisticModuleCs">
+			<HintPath>..\..\DLL\Assembly\TimeStatisticModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="ShellModuleCs">
+			<HintPath>..\..\DLL\Assembly\ShellModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSSurfaceDefectFilterModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSSurfaceDefectFilterModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSAngleBisectorFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSAngleBisectorFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="TriggerModuleCs">
+			<HintPath>..\..\DLL\Assembly\TriggerModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSGluePathConductModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSGluePathConductModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="SaveImageCs">
+			<HintPath>..\..\DLL\Assembly\SaveImageCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCaliperCornerModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCaliperCornerModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSEdgePosTrendAnalyModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSEdgePosTrendAnalyModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSEdgePairPosTrendAnalyModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSEdgePairPosTrendAnalyModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSEdgePairFlawInspModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSEdgePairFlawInspModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSEdgePairInspGroupModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSEdgePairInspGroupModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSCaliperEdgeModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSCaliperEdgeModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSEdgeFlawInspModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSEdgeFlawInspModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSEdgeInspGroupModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSEdgeInspGroupModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="ImageCollectModuCs">
+			<HintPath>..\..\DLL\Assembly\ImageCollectModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="CommManagerModuleCs">
+			<HintPath>..\..\DLL\Assembly\CommManagerModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="AndModuleCs">
+			<HintPath>..\..\DLL\Assembly\AndModuleCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSEdgeWidthFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSEdgeWidthFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSShadeCorrectModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSShadeCorrectModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSPeakFindModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSPeakFindModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSColorExtractModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSColorExtractModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSColorMeasureModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSColorMeasureModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSColorRecognitionModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSColorRecognitionModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSColorTransformModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSColorTransformModuCs.dll</HintPath>
+		</Reference>
+		<Reference Include="IMVSHPFeatureMatchModuCs">
+			<HintPath>..\..\DLL\Assembly\IMVSHPFeatureMatchModuCs.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 
