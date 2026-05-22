@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using VisionServices.Controls;
 using VisionServices.Core;
 using VisionServices.Services.VisionMaster;
 using VM.Core;

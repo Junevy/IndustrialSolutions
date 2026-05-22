@@ -16,8 +16,11 @@
 
         //public bool SetParam<T>(string key, T value);
 
-        public object GetResult(string algorithmName, string paramName, string groupName = "流程1");
-        public T GetResult<T>(string algorithmName, string paramName, string groupName = "流程1");
+        public object? GetModuResult(string algorithmName, string paramName, string groupName = "流程1");
+        public T? GetModuResult<T>(string algorithmName, string paramName, string groupName = "流程1");
+
+        public object? GetAlgorithmResult(string algorithmName, string paramName, string groupName = "流程1");
+        public T? GetAlgorithmResult<T>(string algorithmName, string paramName, string groupName = "流程1");
 
         //public K GetListResult<T, K>(string algorithmName, string paramName, string groupName = "流程1");
 
