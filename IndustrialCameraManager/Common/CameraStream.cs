@@ -1,15 +1,19 @@
-﻿using IndustrialCameraManager.Core;
+using IndustrialCameraManager.Abstractions;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace IndustrialCameraManager.Stream
+namespace IndustrialCameraManager.Common
 {
+    /// <summary>
+    /// 相机图像帧数据流类，用于发布和订阅相机图像帧数据。
+    /// </summary>
     public class CameraStream : ICameraStream
     {
         private readonly ConcurrentDictionary<string, CameraStreamSuber> subscribers = new();
+        // 订阅数量
         public int SubscriberCount => subscribers.Count;
 
         public void Subscribe(string key, Func<IFrame, Task> handler, int capacity = 5)
@@ -20,11 +24,11 @@ namespace IndustrialCameraManager.Stream
                     FullMode = BoundedChannelFullMode.DropOldest
                 });
 
-            if (subscribers.TryRemove(key, out var old))
-                old.Dispose();
+            if (subscribers.TryRemove(key, out var oldSuber))
+                oldSuber.Dispose();
 
             var cts = new CancellationTokenSource();
-            var worker = Task.Run(async () =>
+            var worker = Task.Run( async () =>
             {
                 try
                 {
@@ -38,6 +42,7 @@ namespace IndustrialCameraManager.Stream
                             }
                             catch (Exception ex)
                             {
+                                // 处理异常...
                                 Console.WriteLine(ex.Message);
                             }
                             finally
@@ -54,14 +59,17 @@ namespace IndustrialCameraManager.Stream
 
         public void Publish(IFrame frame)
         {
+            if (frame == null || frame.Data == null) return;
+            if (subscribers.Count <= 0) return;
+
             foreach (var sub in subscribers.Values)
             {
                 frame.AddRef();
 
                 if (!sub.Channel.Writer.TryWrite(frame))
-                    frame.Dispose(); // 写失败要释放
+                    frame.Dispose();
             }
-            frame.Dispose(); // 初始引用释放
+            frame.Dispose();
         }
 
         public bool Unsubscribe(string key)
@@ -81,8 +89,6 @@ namespace IndustrialCameraManager.Stream
                 sub.Dispose();
             }
             subscribers.Clear();
-
         }
     }
 }
-

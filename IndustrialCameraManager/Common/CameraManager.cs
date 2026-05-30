@@ -1,48 +1,47 @@
-﻿using IndustrialCameraManager.Core;
+using IndustrialCameraManager.Abstractions;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace IndustrialCameraManager.Common
 {
     /// <summary>
-    /// 相机的管理类，职责：
-    ///     1）维护工业相机实例的生命周期，确保同一相机只创建一个实例；
-    ///     2）返回指定工业相机的实例。
+    /// 相机管理器
     /// </summary>
     public class CameraManager : IDisposable
     {
-        private readonly ICameraProvider provider;
-        // 存储相机实例的字典
+        /// <summary>
+        /// 缓存的相机实例
+        /// </summary>
         private readonly ConcurrentDictionary<string, ICamera> cameras = new();
-        // 枚举的相机信息列表
-        public ObservableCollection<ICameraInfo> CamInfoList { get; private set; } = new();
 
-        public CameraManager(ICameraProvider provider)
+        /// <summary>
+        /// 注册相机实例
+        /// </summary>
+        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="camera">相机实例</param>
+        /// <exception cref="ArgumentNullException">
+        /// <c>serialNumber</c> 或 <c>camera</c> 为 <c>null</c>
+        /// </exception>
+        public void Register(string serialNumber, ICamera camera)
         {
-            this.provider = provider;
+            if (string.IsNullOrEmpty(serialNumber))
+                throw new ArgumentNullException(nameof(serialNumber));
+
+            cameras[serialNumber] = camera ?? throw new ArgumentNullException(nameof(camera));
         }
 
-        public ICamera GetOrCreate(ICameraInfo info)
-        {
-            if (info == null)
-                throw new ArgumentNullException(nameof(info));
-
-            var key = info.SerialNumber; // 唯一标识
-
-            if (string.IsNullOrEmpty(key))
-                throw new ArgumentNullException(nameof(info));
-
-            if (cameras.TryGetValue(key, out var existing))
-                return existing;
-
-            var cam = provider.Create(info);
-            cameras[key] = cam;
-            return cam;
-        }
-
-        public bool GetCamera(string serialNumber, out ICamera camera)
+        /// <summary>
+        /// 尝试获取相机实例
+        /// </summary>
+        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="camera">相机实例</param>
+        /// <returns>
+        /// 是否成功获取相机实例
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <c>serialNumber</c> 为 <c>null</c>
+        /// </exception>
+        public bool TryGet(string serialNumber, out ICamera camera)
         {
             camera = null;
 
@@ -52,10 +51,21 @@ namespace IndustrialCameraManager.Common
             return cameras.TryGetValue(serialNumber, out camera);
         }
 
-        public bool DisposeCamera(string serialNumber)
+        /// <summary>
+        /// 移除相机实例
+        /// </summary>
+        /// <param name="serialNumber">相机序列号</param>
+        /// <returns>
+        /// 是否成功移除相机实例
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <c>serialNumber</c> 为 <c>null</c>
+        /// </exception>
+        public bool Remove(string serialNumber)
         {
             if (string.IsNullOrEmpty(serialNumber))
                 throw new ArgumentNullException(nameof(serialNumber));
+
             if (cameras.TryRemove(serialNumber, out var cam))
             {
                 cam.Dispose();
@@ -64,31 +74,18 @@ namespace IndustrialCameraManager.Common
             return false;
         }
 
-        public void EnumerateCameras(CameraType type = CameraType.ALL)
-        {
-            IEnumerable<ICameraInfo> ls;
-            if (type == CameraType.ALL) ls = provider.Enumerate();
-            else ls = provider.Enumerate(type);
-            FillCameraList(ls);
-        }
-
-        private void FillCameraList(IEnumerable<ICameraInfo> infoList)
-        {
-            CamInfoList.Clear();
-            foreach (var info in infoList)
-                CamInfoList.Add(info);
-        }
-
-
+        /// <summary>
+        /// 释放所有相机实例
+        /// </summary>
+        /// <exception cref="ArgumentNullException">
+        /// <c>serialNumber</c> 为 <c>null</c>
+        /// </exception>
         public void Dispose()
         {
-            foreach (var cam in cameras.Values) cam.Dispose();
+            foreach (var cam in cameras.Values)
+                cam.Dispose();
+
             cameras.Clear();
-
-            CamInfoList.Clear();
-            CamInfoList = null;
-
-            provider.Dispose();
         }
     }
 }

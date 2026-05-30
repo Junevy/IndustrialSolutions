@@ -1,20 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace IndustrialCameraManager.Core
+namespace IndustrialCameraManager.Abstractions
 {
     /// <summary>
-    /// 工业相机的Provider类
-    /// 用于：
-    ///     1）枚举工业相机；
-    ///     2）创建工业相机的实例。
+    /// Camera提供器接口
     /// </summary>
-    public interface ICameraProvider : IDisposable
+    public interface ICameraProvider
     {
         ICamera Create(ICameraInfo info);
+
         IEnumerable<ICamera> CreateAll();
 
         IEnumerable<ICameraInfo> Enumerate();
+
         IEnumerable<ICameraInfo> Enumerate(CameraType type);
     }
 }

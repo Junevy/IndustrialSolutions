@@ -1,22 +1,31 @@
-﻿using IndustrialCameraManager.Core;
+using IndustrialCameraManager.Abstractions;
 using MvCameraControl;
 using System;
 using System.Drawing;
 using System.Threading;
 
-namespace IndustrialCameraManager.HikVision
+namespace IndustrialCameraManager.Vendors.HikVision
 {
+    /// <summary>
+    /// Hik相机图像帧包装器
+    /// </summary>
+    /// <param name="native">Hik相机图像帧</param>
+    /// <returns>
+    /// <see cref="IFrame" />
+    /// </returns>
     public class HikFrameWrapper(IFrameOut native) : IFrame
     {
+        /// <summary>
+        /// 原始Hik相机图像帧
+        /// </summary>
         private readonly IFrameOut native = native;
         private int refCount = 1;
-
 
         public IntPtr PixelDataPtr => native.Image.PixelDataPtr;
 
         public byte[] Data => native.Image.PixelData;
 
-        public int Stride => (int)(ImageSize / Height);
+        public int Stride => Height > 0 ? (int)(ImageSize / Height) : 0;
 
         public ImagePixelFormat PixelType => ConvertFormat(native.Image.PixelType);
 
@@ -29,15 +38,12 @@ namespace IndustrialCameraManager.HikVision
         public void Dispose()
         {
             if (Interlocked.Decrement(ref refCount) == 0)
-            {
                 native.Dispose();
-            }
         }
 
         public void AddRef()
-        {
-            Interlocked.Increment(ref refCount);
-        }
+            => Interlocked.Increment(ref refCount);
+        
 
         private ImagePixelFormat ConvertFormat(MvGvspPixelType pixelType)
         {
@@ -61,9 +67,6 @@ namespace IndustrialCameraManager.HikVision
         }
 
         public Bitmap GetBitmap()
-        {
-            return native.Image.ToBitmap();
-        }
-
+            => native.Image.ToBitmap();
     }
 }

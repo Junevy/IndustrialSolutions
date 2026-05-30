@@ -300,9 +300,6 @@
 		<Reference Include="VMControls.RenderInterface">
 			<HintPath>..\..\DLL\Assembly\VMControls.RenderInterface.dll</HintPath>
 		</Reference>
-		<Reference Include="VMControls.Winform.Release">
-			<HintPath>..\..\DLL\Assembly\VMControls.Winform.Release.dll</HintPath>
-		</Reference>
 		<Reference Include="IMVSMultiImageFusionModuCs">
 			<HintPath>..\..\DLL\Assembly\IMVSMultiImageFusionModuCs.dll</HintPath>
 		</Reference>
@@ -546,10 +543,6 @@
 		<Reference Include="IMVSHPFeatureMatchModuCs">
 			<HintPath>..\..\DLL\Assembly\IMVSHPFeatureMatchModuCs.dll</HintPath>
 		</Reference>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Controls\" />
 	</ItemGroup>
 
 </Project>

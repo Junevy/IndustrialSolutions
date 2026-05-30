@@ -1,7 +1,7 @@
-﻿using IndustrialCameraManager.Core;
+using IndustrialCameraManager.Abstractions;
 using MvCameraControl;
 
-namespace IndustrialCameraManager.HikVision
+namespace IndustrialCameraManager.Vendors.HikVision
 {
     public class HikCameraInfo : ICameraInfo
     {

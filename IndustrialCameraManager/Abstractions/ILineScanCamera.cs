@@ -1,7 +1,6 @@
-﻿namespace IndustrialCameraManager.Core
+namespace IndustrialCameraManager.Abstractions
 {
     public interface ILineScanCamera : ICamera
     {
-
     }
 }

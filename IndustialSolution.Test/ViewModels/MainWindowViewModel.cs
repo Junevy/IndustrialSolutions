@@ -1,8 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ImageSourceModuleCs;
+using IndustrialCameraManager.Abstractions;
 using IndustrialCameraManager.Common;
-using IndustrialCameraManager.Core;
 using System.Collections.ObjectModel;
 using System.Windows;
 using VM.Core;
@@ -18,7 +18,7 @@ namespace IndustialSolution.Test.ViewModels
         [ObservableProperty]
         private ICameraInfo? selectedCameraInfo;
 
-        public ObservableCollection<ICameraInfo> CamInfoList => cameraService.CamInfoList;
+        public ObservableCollection<ICameraInfo> CamInfoList { get; set; } = new();
         public VmMainViewConfigControl VmMain { get; private set; } = new();
         public VmRenderControl VmRender { get; private set; } = new();
 
@@ -31,13 +31,14 @@ namespace IndustialSolution.Test.ViewModels
         [RelayCommand]
         public void EnumerateCameras()
         {
-            cameraService.EnumerateCameras();
+            foreach (var cameraInfo in cameraService.EnumerateCameras())
+                CamInfoList.Add(cameraInfo);
         }
 
         [RelayCommand]
         public void OpenCamera()
         {
-            if (SelectedCameraInfo == null)
+            if (SelectedCameraInfo is null)
             {
                 MessageBox.Show("Select a camera first");
                 return;
@@ -82,7 +83,7 @@ namespace IndustialSolution.Test.ViewModels
         {
             VmSolution.Load(@"D:\Desktop\WorkSpace\VMDevelop\OCR_F166.sol");
 
-            var result = cameraService.SetTriggerMode(SelectedCameraInfo?.SerialNumber, "Software");
+            var result = cameraService.SetTrigger(SelectedCameraInfo?.SerialNumber, "Software", false);
             if (!result.IsSuccess)
             {
                 MessageBox.Show(result.Message);
@@ -130,7 +131,7 @@ namespace IndustialSolution.Test.ViewModels
 
                 //imageSource?.Run();
 
-          
+
 
                 //imageSource?.ModuParams.SetInputImage(inputImageData);
 

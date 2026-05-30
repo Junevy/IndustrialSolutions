@@ -1,9 +1,8 @@
 ﻿using IndustialSolution.Test.ViewModels;
 using IndustialSolution.Test.Views;
+using IndustrialCameraManager.Abstractions;
 using IndustrialCameraManager.Common;
-using IndustrialCameraManager.Core;
-using IndustrialCameraManager.Extensions;
-using IndustrialCameraManager.HikVision;
+using IndustrialCameraManager.Vendors.HikVision;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
@@ -39,7 +38,7 @@ namespace IndustialSolution.Test
             container.AddSingleton<ICameraProvider, HikCameraProvider>();
             container.AddSingleton<CameraManager>();
 
-            container.AddHikCameraService();
+            //container.AddHikCameraService();
 
             this.Provider = container.BuildServiceProvider();
         }

@@ -1,19 +1,24 @@
-﻿using IndustrialCameraManager.Common;
-using IndustrialCameraManager.Core;
+using IndustrialCameraManager.Abstractions;
 using MvCameraControl;
 using System;
+using System.Threading;
 
-namespace IndustrialCameraManager.HikVision
+namespace IndustrialCameraManager.Vendors.HikVision
 {
+    /// <summary>
+    /// Hik相机实现
+    /// </summary>
     public class HikCamera : ICamera
     {
-        private bool isCreate = false;
-        private bool isGrabbing = false;
+        private volatile int isCreate = 0;
+        private volatile int isGrabbing = 0;
 
         private IDevice camera;
         private readonly IDeviceInfo deviceInfo;
         private readonly ICameraStream stream;
-        public bool IsOpen => (camera?.IsConnected) ?? false;   // The value is true When Camera.Open()
+
+        public bool IsOpen => camera != null && (camera?.IsConnected ?? false) && isCreate == 1;
+        public bool IsGrabbing => Interlocked.CompareExchange(ref isGrabbing, 1, 1) == 1;
 
         public HikCamera(IDeviceInfo info, ICameraStream cameraStream)
         {
@@ -27,7 +32,7 @@ namespace IndustrialCameraManager.HikVision
             {
                 this.camera = DeviceFactory.CreateDeviceByIp(ipAddress, netExport);
                 this.stream = cameraStream;
-                isCreate = true;
+                Interlocked.Increment(ref isCreate);
             }
             catch (MvException)
             {
@@ -39,32 +44,12 @@ namespace IndustrialCameraManager.HikVision
         {
             try
             {
-                if (!isCreate)
-                {
+                if (Interlocked.CompareExchange(ref isCreate, 1, 0) == 0)
                     camera = DeviceFactory.CreateDevice(deviceInfo);
-                    isCreate = true;
-                }
 
                 int result = camera.Open();
-
                 if (result != MvError.MV_OK)
                     return CameraResult.Fail(result, "Open camera failed");
-
-                //camera.Open(DeviceAccessMode.)
-                //if (camera is IGigEDevice)
-                //{
-                //    IGigEDevice gigEDevice = camera as IGigEDevice;
-
-                //    // 配置网口相机的最佳包大小
-                //    gigEDevice.GetOptimalPacketSize(out int packetSize);
-                //    gigEDevice.Parameters.SetIntValue("GevSCPSPacketSize", packetSize);
-                //}
-                //else if (camera is IUSBDevice)
-                //{
-                //    // 设置USB同步读写超时时间
-                //    IUSBDevice usbDevice = camera as IUSBDevice;
-                //    usbDevice.SetSyncTimeOut(1000);
-                //}
 
                 camera.StreamGrabber.FrameGrabedEvent -= ProcessFrameCallBack;
                 camera.StreamGrabber.FrameGrabedEvent += ProcessFrameCallBack;
@@ -82,26 +67,36 @@ namespace IndustrialCameraManager.HikVision
 
         public CameraResult Close()
         {
+            if (camera == null) return CameraResult.Fail(-1, "Camera not initialized");
             StopGrab();
-            int result = camera.Close();
-            camera.StreamGrabber.FrameGrabedEvent -= ProcessFrameCallBack;
-            return CameraResult.Result(result == MvError.MV_OK, result);
+
+            try
+            {
+                int result = camera.Close();
+                return CameraResult.Result(result == MvError.MV_OK, result);
+            }
+            finally
+            {
+                camera.StreamGrabber.FrameGrabedEvent -= ProcessFrameCallBack;
+            }
         }
 
         public CameraResult Grab()
         {
-            if (isGrabbing)
+            if (Interlocked.CompareExchange(ref isGrabbing, 1, 1) == 1)
                 return CameraResult.Fail(-1, "Camera is already grabbing");
 
             try
             {
                 var grabResult = camera.StreamGrabber.StartGrabbing();
-                isGrabbing = grabResult == MvError.MV_OK;
-                return CameraResult.Result(isGrabbing, grabResult);
+
+                if (grabResult != MvError.MV_OK) Interlocked.Exchange(ref isGrabbing, 0);
+                else Interlocked.Exchange(ref isGrabbing, 1);
+
+                return CameraResult.Result(grabResult == MvError.MV_OK, grabResult);
             }
             catch (MvException ex)
             {
-                isGrabbing = false;
                 StopGrab();
                 return CameraResult.Fail(ex.ErrorCode, ex.Message);
             }
@@ -110,7 +105,7 @@ namespace IndustrialCameraManager.HikVision
         private void ProcessFrameCallBack(object sender, FrameGrabbedEventArgs e)
         {
             var clonedFrame = (IFrameOut)e.FrameOut.Clone();
-            camera.StreamGrabber.FreeImageBuffer(e.FrameOut);   // copy完毕后释放原始帧
+            camera.StreamGrabber.FreeImageBuffer(e.FrameOut);
 
             IFrame frame = new HikFrameWrapper(clonedFrame);
             stream.Publish(frame);
@@ -118,8 +113,8 @@ namespace IndustrialCameraManager.HikVision
 
         public void StopGrab()
         {
-            camera.StreamGrabber.StopGrabbing();
-            isGrabbing = false;
+            if (Interlocked.CompareExchange(ref isGrabbing, 0, 1) == 1)
+                camera.StreamGrabber.StopGrabbing();
         }
 
         public CameraResult SetParam(string key, string value)
@@ -130,32 +125,23 @@ namespace IndustrialCameraManager.HikVision
 
         public CameraResult ExecuteCommand(string command)
         {
+            if (string.IsNullOrEmpty(command))
+                return CameraResult.Fail(-1, "Check the command");
+
             int result = camera.Parameters.SetCommandValue(command);
             return CameraResult.Result(result == MvError.MV_OK, result);
         }
 
         public void Dispose()
         {
-            Close();
-            isCreate = false;
-            isGrabbing = false;
-            camera.Dispose();
-            camera = null;
-        }
-
-        public CameraResult SetTrigger(string triggerWay, bool isGrab)
-        {
-            if (isGrabbing) StopGrab();
-
-            if (string.IsNullOrEmpty(triggerWay))
-                return CameraResult.Fail(-1, "Check the trigger source or trigger way");
-
-            string grabMode = isGrab ? "On" : "Off";
-            var result = SetParam("TriggerMode", grabMode);
-            if (!result.IsSuccess)
-                return result;
-
-            return SetParam("TriggerSource", triggerWay);
+            if (camera != null)
+            {
+                Close();
+                camera.Dispose();
+                camera = null;
+            }
+            Interlocked.CompareExchange(ref isCreate, 0, 1);
+            Interlocked.CompareExchange(ref isGrabbing, 0, 1);
         }
 
         public T GetParam<T>(string paramName)

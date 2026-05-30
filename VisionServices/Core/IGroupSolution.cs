@@ -1,8 +1,6 @@
-﻿using VisionServices.Services.VisionMaster;
-
-namespace VisionServices.Core
+﻿namespace VisionServices.Core
 {
-    public interface IGroupSolution
+    public interface IGroupSolution : IDisposable
     {
         public T? GetGroupOutput<T>(string paramName, string groupName = "流程1");
 

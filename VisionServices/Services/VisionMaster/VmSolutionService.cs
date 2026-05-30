@@ -4,14 +4,12 @@ using VM.Core;
 
 namespace VisionServices.Services.VisionMaster
 {
-    public class VmSolutionService : ISolution, IGroupSolution, IDisposable
+    public class VmSolutionService : ISolution, IGroupSolution
     {
-        private VmSolution vmSolution;
+        public VmSolution Solution => VmSolution.Instance;
 
-        public VmSolutionService(VmSolution vmSolution)
+        public VmSolutionService()
         {
-            if (vmSolution == null) throw new ArgumentNullException(nameof(vmSolution));
-            this.vmSolution = vmSolution;
         }
 
         public void Load(string solutionPath)
@@ -28,9 +26,9 @@ namespace VisionServices.Services.VisionMaster
             });
         }
 
-        public void Run() => vmSolution.SyncRun();
+        public void Run() => Solution.SyncRun();
 
-        public void RunAsync() => vmSolution.Run();
+        public void RunAsync() => Solution.Run();
 
         public void Save() => VmSolution.Save();
 
@@ -63,7 +61,7 @@ namespace VisionServices.Services.VisionMaster
                 || string.IsNullOrEmpty(groupName))
                 return default;
 
-            var algorithm = vmSolution[groupName + "." + algorithmName];
+            var algorithm = Solution[groupName + "." + algorithmName];
             if (algorithm == null)
                 return default;
 
@@ -112,7 +110,11 @@ namespace VisionServices.Services.VisionMaster
 
         public void Dispose()
         {
-            vmSolution.Dispose();
+            Solution.Dispose();
         }
+
+        public object? GetModule(string moduleName)
+            => this.Solution[moduleName];
+        
     }
 }
