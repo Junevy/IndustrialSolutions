@@ -8,19 +8,12 @@ namespace IndustrialCameraManager.Common
     /// <summary>
     /// 相机服务类
     /// </summary>
-    public class CameraService
+    public class CameraService(ICameraProvider provider, CameraManager cameraManager, StreamManager streamManager)
     {
         private const string ErrorMsg = "Camera not open or found";
-        private readonly ICameraProvider provider;
-        private readonly CameraManager cameraManager;
-        private readonly StreamManager streamManager;
-
-        public CameraService(ICameraProvider provider, CameraManager cameraManager, StreamManager streamManager)
-        {
-            this.provider = provider;
-            this.cameraManager = cameraManager;
-            this.streamManager = streamManager;
-        }
+        private readonly ICameraProvider provider = provider;
+        private readonly CameraManager cameraManager = cameraManager;
+        private readonly StreamManager streamManager = streamManager;
 
         /// <summary>
         /// 枚举相机
@@ -42,10 +35,10 @@ namespace IndustrialCameraManager.Common
         public CameraResult OpenCamera(ICameraInfo info)
         {
             if (info == null)
-                return CameraResult.Fail(-1, "No camera selected");
+                return CameraResult.Fail(-1, "The camera info is null");
 
             if (string.IsNullOrEmpty(info.SerialNumber))
-                return CameraResult.Fail(-1, "Invalid camera serial number");
+                return CameraResult.Fail(-1, "The camera serial number is empty");
 
             try
             {
@@ -56,7 +49,7 @@ namespace IndustrialCameraManager.Common
                 }
 
                 if (camera.IsOpen)
-                    return CameraResult.Fail(-1, "The camera has been connected");
+                    return CameraResult.Fail(-1, "The camera has been opened");
 
                 return camera.Open();
             }
@@ -102,7 +95,7 @@ namespace IndustrialCameraManager.Common
         }
 
         /// <summary>
-        /// 开始采集指定相机的图像帧数据
+        /// 打开指定相机的图像采集功能
         /// </summary>
         /// <param name="serialNumber">相机序列号</param>
         /// <returns>
@@ -125,7 +118,7 @@ namespace IndustrialCameraManager.Common
         }
 
         /// <summary>
-        /// 停止采集指定相机的图像帧数据
+        /// 停止指定相机的图像采集功能
         /// </summary>
         /// <param name="serialNumber">相机序列号</param>
         /// <returns>
@@ -141,7 +134,7 @@ namespace IndustrialCameraManager.Common
         }
 
         /// <summary>
-        /// 关闭指定相机
+        /// 断开连接指定相机
         /// </summary>
         /// <param name="serialNumber">相机序列号</param>
         /// <returns>
@@ -160,7 +153,7 @@ namespace IndustrialCameraManager.Common
         }
 
         /// <summary>
-        /// 设置指定相机的参数
+        /// 设置相机的指定参数
         /// </summary>
         /// <param name="serialNumber">相机序列号</param>
         /// <param name="key">参数键</param>
@@ -177,7 +170,7 @@ namespace IndustrialCameraManager.Common
         }
 
         /// <summary>
-        /// 执行指定的相机的命令
+        /// 执行相机的指定命令
         /// </summary>
         /// <param name="serialNumber">相机序列号</param>
         /// <param name="command">命令</param>
@@ -193,7 +186,7 @@ namespace IndustrialCameraManager.Common
         }
 
         /// <summary>
-        /// 设置指定的相机的触发方式
+        /// 设置相机的触发方式
         /// </summary>
         /// <param name="serialNumber">相机序列号</param>
         /// <param name="triggerWay">触发方式</param>

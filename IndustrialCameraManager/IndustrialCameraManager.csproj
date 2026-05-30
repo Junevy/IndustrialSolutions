@@ -72,7 +72,6 @@
     <Compile Include="Abstractions\ICameraProvider.cs" />
     <Compile Include="Abstractions\ICameraSdkSystem.cs" />
     <Compile Include="Abstractions\ICameraStream.cs" />
-    <Compile Include="Abstractions\ICameraStreamSuber.cs" />
     <Compile Include="Abstractions\IFrame.cs" />
     <Compile Include="Abstractions\ILineScanCamera.cs" />
     <Compile Include="Abstractions\ImagePixelFormat.cs" />
