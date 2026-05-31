@@ -1,4 +1,5 @@
 using IndustrialCameraManager.Abstractions;
+using Microsoft.Win32;
 using MvCameraControl;
 using System;
 using System.Threading;
@@ -117,10 +118,136 @@ namespace IndustrialCameraManager.Vendors.HikVision
                 camera.StreamGrabber.StopGrabbing();
         }
 
-        public CameraResult SetParam(string key, string value)
+        public CameraResult SetParam<T>(string paramName, T value)
         {
-            int result = camera.Parameters.SetEnumValueByString(key, value);
-            return CameraResult.Result(result == MvError.MV_OK, result);
+            int result = int.MinValue;
+
+            if (typeof(T) == typeof(int))
+            {
+                var intValue = (int)(object)value!;
+                return SetParam(paramName, intValue);
+            }
+            else if (typeof(T) == typeof(float))
+            {
+                var floatValue = (float)(object)value!;
+                return SetParam(paramName, floatValue);
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                var boolValue = (bool)(object)value!;
+                return SetParam(paramName, boolValue);
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                var stringValue = (string)(object)value!;
+                return SetParam(paramName, stringValue);
+            }
+
+            bool success = result == MvError.MV_OK;
+            return CameraResult.Result(
+                success,
+                result,
+                success ? "" : "Check the type of value or paramName!");
+        }
+
+        public CameraResult SetParam(string paramName, int value)
+        {
+            int result = camera.Parameters.SetIntValue(paramName, value);
+
+            bool success = result == MvError.MV_OK;
+
+            return CameraResult.Result(
+                success,
+                result,
+                success ? string.Empty : "Check the paramName!");
+        }
+
+        public CameraResult SetParam(string paramName, float value)
+        {
+            int result = camera.Parameters.SetFloatValue(paramName, value);
+
+            bool success = result == MvError.MV_OK;
+
+            return CameraResult.Result(
+                success,
+                result,
+                success ? string.Empty : "Check the paramName!");
+        }
+
+        public CameraResult SetParam(string paramName, bool value)
+        {
+            int result = camera.Parameters.SetBoolValue(paramName, value);
+
+            bool success = result == MvError.MV_OK;
+
+            return CameraResult.Result(
+                success,
+                result,
+                success ? string.Empty : "Check the paramName!");
+        }
+
+        public CameraResult SetParam(string paramName, string value)
+        {
+            var result = camera.Parameters.SetStringValue(paramName, value);
+
+            var success = result == MvError.MV_OK;
+            return CameraResult.Result(
+                success,
+                result,
+                success ? string.Empty : "Check the paramName!");
+        }
+
+        public CameraResult SetEnumParam(string paramName, string value)
+        {
+            if (string.IsNullOrEmpty(paramName) || string.IsNullOrEmpty(value))
+                return CameraResult.Result(
+                    false,
+                    int.MinValue,
+                    "The paramName or value is null");
+
+            var result = camera.Parameters.SetEnumValueByString(paramName, value);
+            var success = result == MvError.MV_OK;
+            return CameraResult.Result(
+                success,
+                result,
+                success ? string.Empty : "Check the paramName!");
+        }
+
+        public T GetParam<T>(string paramName)
+        {
+            if (typeof(T) == typeof(int))
+            {
+                camera.Parameters.GetIntValue(paramName, out IIntValue value);
+                return (T)(object)(int)value.CurValue;
+            }
+            else if (typeof(T) == typeof(float))
+            {
+                camera.Parameters.GetFloatValue(paramName, out IFloatValue value);
+                return (T)(object)value.CurValue;
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                camera.Parameters.GetStringValue(paramName, out IStringValue value);
+                return (T)(object)value.CurValue;
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                camera.Parameters.GetBoolValue(paramName, out bool value);
+                return (T)(object)value;
+            }
+            else if (typeof(T) == typeof(byte))
+            {
+                camera.Parameters.GetEnumValue(paramName, out IEnumValue value);
+                return (T)(object)value;
+            }
+
+            return default;
+        }
+
+        public string GetEnumValue(string paramName)
+        {
+            var result = camera.Parameters.GetEnumValue(paramName, out IEnumValue enumValue);
+            return result == MvError.MV_OK ? enumValue.CurEnumEntry.Symbolic.ToString() : "ERROR";
         }
 
         public CameraResult ExecuteCommand(string command)
@@ -144,18 +271,5 @@ namespace IndustrialCameraManager.Vendors.HikVision
             Interlocked.CompareExchange(ref isGrabbing, 0, 1);
         }
 
-        public T GetParam<T>(string paramName)
-        {
-            switch (typeof(T))
-            {
-                case Type t when t == typeof(int):
-                    camera.Parameters.GetIntValue(paramName, out IIntValue intValue);
-                    return (T)(object)intValue.CurValue;
-                case Type t when t == typeof(float):
-                    camera.Parameters.GetFloatValue(paramName, out IFloatValue floatValue);
-                    return (T)(object)floatValue.CurValue;
-                default: throw new NotSupportedException($"Parameter type {typeof(T)} is not supported");
-            }
-        }
     }
 }

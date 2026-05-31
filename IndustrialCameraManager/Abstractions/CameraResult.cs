@@ -24,7 +24,7 @@ namespace IndustrialCameraManager.Abstractions
             this.Message = msg;
         }
 
-        public static CameraResult Result(bool result, int code) => new (result, code);
+        public static CameraResult Result(bool result, int code, string message = "") => new (result, code, message);
 
         public static CameraResult Fail(int errorCode, string errMsg = "") => new (false, errorCode, errMsg);
 

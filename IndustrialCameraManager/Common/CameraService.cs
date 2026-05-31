@@ -22,8 +22,7 @@ namespace IndustrialCameraManager.Common
         /// <returns>
         /// 相机信息列表
         /// </returns>
-        public IEnumerable<ICameraInfo> EnumerateCameras(CameraType type = CameraType.ALL)
-            => provider.Enumerate(type);
+        public IEnumerable<ICameraInfo> EnumerateCameras(CameraType type = CameraType.ALL) => provider.Enumerate(type);
 
         /// <summary>
         /// 打开相机
@@ -156,18 +155,51 @@ namespace IndustrialCameraManager.Common
         /// 设置相机的指定参数
         /// </summary>
         /// <param name="serialNumber">相机序列号</param>
-        /// <param name="key">参数键</param>
+        /// <param name="paramName">参数键</param>
         /// <param name="value">参数值</param>
         /// <returns>
         /// 相机操作结果
         /// </returns>
-        public CameraResult SetParam(string serialNumber, string key, string value)
+        public CameraResult SetParam(string serialNumber, string paramName, string value)
         {
             if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
-            return camera.SetParam(key, value);
+            return camera.SetParam(paramName, value);
         }
+
+        public CameraResult SetParam(string serialNumber, string paramName, int value)
+        {
+            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+                return CameraResult.Fail(-1, ErrorMsg);
+
+            return camera.SetParam(paramName, value);
+        }
+
+        public CameraResult SetParam(string serialNumber, string paramName, bool value)
+        {
+            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+                return CameraResult.Fail(-1, ErrorMsg);
+
+            return camera.SetParam(paramName, value);
+        }
+
+        public CameraResult SetParam(string serialNumber, string paramName, float value)
+        {
+            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+                return CameraResult.Fail(-1, ErrorMsg);
+
+            return camera.SetParam(paramName, value);
+        }
+
+        public CameraResult SetEnumParam(string serialNumber, string paramName, string value)
+        {
+            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+                return CameraResult.Fail(-1, ErrorMsg);
+
+            return camera.SetEnumParam(paramName, value);
+        }
+
 
         /// <summary>
         /// 执行相机的指定命令
@@ -208,6 +240,22 @@ namespace IndustrialCameraManager.Common
             camera.SetParam("TriggerMode", acq);    
 
             return camera.SetParam("TriggerSource", triggerWay);
+        }
+
+        public T GetParam<T>(string serialNumber, string paramName)
+        {
+            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+                return default;
+
+            return camera.GetParam<T>(paramName);
+        }
+
+        public string GetEnumParam(string serialNumber, string paramName)
+        {
+            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+                return string.Empty;
+
+            return camera.GetEnumValue(paramName);
         }
     }
 }
