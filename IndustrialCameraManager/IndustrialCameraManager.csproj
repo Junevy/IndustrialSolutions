@@ -45,6 +45,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\MvCameraControl.Net.dll</HintPath>
     </Reference>
+    <Reference Include="MVSDK_Net">
+      <HintPath>..\..\..\..\..\iCloud\iCloudDrive\WorkSpace\MachineVision\IRayple\Industrial Camera\Dll\MVSDK_Net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -88,11 +91,18 @@
     <Compile Include="Vendors\HikVision\HikCameraProvider.cs" />
     <Compile Include="Vendors\HikVision\HikCameraSdkSystem.cs" />
     <Compile Include="Vendors\HikVision\HikFrameWrapper.cs" />
+    <Compile Include="Vendors\IRayple\IRaypleCamera.cs" />
+    <Compile Include="Vendors\IRayple\IRaypleCameraInfo.cs" />
+    <Compile Include="Vendors\IRayple\IRaypleCameraProvider.cs" />
+    <Compile Include="Vendors\IRayple\IRaypleCameraSdkSystem.cs" />
+    <Compile Include="Vendors\IRayple\IRaypleFrameWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Vendors\IRayple\" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>

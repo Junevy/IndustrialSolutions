@@ -1,15 +1,11 @@
 using IndustrialCameraManager.Abstractions;
-using System;
-using System.Drawing;
 
 namespace IndustrialCameraManager.Tests.Mocks
 {
     public class MockCamera : ICamera
     {
         public bool IsOpen { get; private set; }
-
         public bool IsDisposed { get; private set; }
-
         public bool IsGrabbing { get; private set; }
 
         public CameraResult Open()
@@ -35,24 +31,49 @@ namespace IndustrialCameraManager.Tests.Mocks
             IsGrabbing = false;
         }
 
-        public CameraResult SetParam(string key, string value)
+        public CameraResult SetParam<T>(string paramName, T value)
         {
             return CameraResult.Success(0);
         }
 
-        public CameraResult ExecuteCommand(string command)
+        public CameraResult SetParam(string paramName, int value)
         {
             return CameraResult.Success(0);
         }
 
-        public CameraResult SetTrigger(string triggerWay, bool isTrigger = false)
+        public CameraResult SetParam(string paramName, float value)
+        {
+            return CameraResult.Success(0);
+        }
+
+        public CameraResult SetParam(string paramName, bool value)
+        {
+            return CameraResult.Success(0);
+        }
+
+        public CameraResult SetParam(string paramName, string value)
+        {
+            return CameraResult.Success(0);
+        }
+
+        public CameraResult SetEnumParam(string paramName, string value)
         {
             return CameraResult.Success(0);
         }
 
         public T GetParam<T>(string paramName)
         {
-            return default(T);
+            return default;
+        }
+
+        public string GetEnumValue(string paramName)
+        {
+            return string.Empty;
+        }
+
+        public CameraResult ExecuteCommand(string command)
+        {
+            return CameraResult.Success(0);
         }
 
         public void Dispose()

@@ -4,6 +4,8 @@ namespace IndustrialCameraManager.Extensions
     {
         public bool EnableHikVision { get; set; }
 
+        public bool EnableIRayple { get; set; }
+
         public bool EnableBasler { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using IndustrialCameraManager.Common;
 using IndustrialCameraManager.Extensions;
 using IndustrialCameraManager.Tests.Mocks;
 using IndustrialCameraManager.Vendors.HikVision;
+using IndustrialCameraManager.Vendors.IRayple;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -156,6 +157,77 @@ namespace IndustrialCameraManager.Tests.Extensions
                     options.EnableBasler = true;
                 });
             });
+        }
+
+        [TestMethod]
+        public void AddIndustrialCamera_WithIRayple_ShouldResolveServices()
+        {
+            var services = new ServiceCollection();
+
+            services.AddIndustrialCamera(options =>
+            {
+                options.EnableIRayple = true;
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            var streamManager = provider.GetService<StreamManager>();
+            Assert.IsNotNull(streamManager);
+
+            var cameraManager = provider.GetService<CameraManager>();
+            Assert.IsNotNull(cameraManager);
+
+            var cameraService = provider.GetService<CameraService>();
+            Assert.IsNotNull(cameraService);
+
+            var cameraProvider = provider.GetService<ICameraProvider>();
+            Assert.IsNotNull(cameraProvider);
+            Assert.IsInstanceOfType(cameraProvider, typeof(IRaypleCameraProvider));
+
+            var sdkSystem = provider.GetService<ICameraSdkSystem>();
+            Assert.IsNotNull(sdkSystem);
+            Assert.IsInstanceOfType(sdkSystem, typeof(IRaypleCameraSdkSystem));
+        }
+
+        [TestMethod]
+        public void AddIRaypleCamera_ShouldRegisterIRaypleServices()
+        {
+            var services = new ServiceCollection();
+
+            services.AddIRaypleCamera();
+
+            var provider = services.BuildServiceProvider();
+
+            var cameraProvider = provider.GetService<ICameraProvider>();
+            Assert.IsNotNull(cameraProvider);
+            Assert.IsInstanceOfType(cameraProvider, typeof(IRaypleCameraProvider));
+
+            var sdkSystem = provider.GetService<ICameraSdkSystem>();
+            Assert.IsNotNull(sdkSystem);
+            Assert.IsInstanceOfType(sdkSystem, typeof(IRaypleCameraSdkSystem));
+        }
+
+        [TestMethod]
+        public void AddIndustrialCamera_WithHikVisionAndIRayple_ShouldRegisterBoth()
+        {
+            var services = new ServiceCollection();
+
+            services.AddIndustrialCamera(options =>
+            {
+                options.EnableHikVision = true;
+                options.EnableIRayple = true;
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            var streamManager = provider.GetService<StreamManager>();
+            Assert.IsNotNull(streamManager);
+
+            var cameraProvider1 = provider.GetService<ICameraProvider>();
+            Assert.IsNotNull(cameraProvider1);
+
+            var cameraProvider2 = provider.GetService<ICameraProvider>();
+            Assert.AreSame(cameraProvider1, cameraProvider2);
         }
     }
 }

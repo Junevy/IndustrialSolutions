@@ -1,6 +1,7 @@
 using IndustrialCameraManager.Abstractions;
 using IndustrialCameraManager.Common;
 using IndustrialCameraManager.Vendors.HikVision;
+using IndustrialCameraManager.Vendors.IRayple;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
@@ -22,6 +23,12 @@ namespace IndustrialCameraManager.Extensions
             if (options.EnableHikVision)
             {
                 RegisterHikVisionServices(services);
+                hasVendor = true;
+            }
+
+            if (options.EnableIRayple)
+            {
+                RegisterIRaypleServices(services);
                 hasVendor = true;
             }
 
@@ -48,6 +55,17 @@ namespace IndustrialCameraManager.Extensions
             return services;
         }
 
+        public static IServiceCollection AddIRaypleCamera(this IServiceCollection services)
+        {
+            if (services == null)
+                throw new ArgumentNullException(nameof(services));
+
+            RegisterIRaypleServices(services);
+            RegisterManagementServices(services);
+
+            return services;
+        }
+
         private static void RegisterManagementServices(IServiceCollection services)
         {
             services.TryAddSingleton<StreamManager>();
@@ -61,9 +79,15 @@ namespace IndustrialCameraManager.Extensions
             services.TryAddSingleton<ICameraSdkSystem, HikCameraSdkSystem>();
         }
 
+        private static void RegisterIRaypleServices(IServiceCollection services)
+        {
+            services.TryAddSingleton<ICameraProvider, IRaypleCameraProvider>();
+            services.TryAddSingleton<ICameraSdkSystem, IRaypleCameraSdkSystem>();
+        }
+
         private static void RegisterBaslerServices(IServiceCollection services)
         {
-            throw new NotImplementedException("Basler camera support is not yet implemented. Register ICameraProvider and ICameraSdkSystem for Basler here.");
+            throw new NotImplementedException("Basler camera support is not yet implemented.");
         }
     }
 }
