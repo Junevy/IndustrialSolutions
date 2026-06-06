@@ -8,6 +8,7 @@ namespace IndustrialCameraManager.Abstractions
         GigE,
         Usb,
         GenTL,
+        CameraLink,
         ALL
     }
 }

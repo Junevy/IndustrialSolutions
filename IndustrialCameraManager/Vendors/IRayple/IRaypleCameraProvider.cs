@@ -2,16 +2,19 @@ using IndustrialCameraManager.Abstractions;
 using IndustrialCameraManager.Common;
 using System.Collections.Generic;
 using System.Linq;
+using MVSDK_Net;
+using static MVSDK_Net.IMVDefine;
+using System.Runtime.InteropServices;
 
 namespace IndustrialCameraManager.Vendors.IRayple
 {
     public class IRaypleCameraProvider : ICameraProvider
     {
-        private readonly StreamManager _streamManager;
+        private readonly StreamManager streamManager;
 
         public IRaypleCameraProvider(StreamManager streamManager)
         {
-            _streamManager = streamManager;
+            this.streamManager = streamManager;
         }
 
         public ICamera Create(ICameraInfo info)
@@ -19,7 +22,7 @@ namespace IndustrialCameraManager.Vendors.IRayple
             if (info is not IRaypleCameraInfo irInfo)
                 throw new System.ArgumentException("Invalid camera info type.");
 
-            var stream = _streamManager.GetOrCreateStream(info.SerialNumber);
+            var stream = streamManager.GetOrCreateStream(info.SerialNumber);
             return new IRaypleCamera(irInfo.Native, stream);
         }
 
@@ -28,7 +31,7 @@ namespace IndustrialCameraManager.Vendors.IRayple
             if (string.IsNullOrWhiteSpace(ipAddress))
                 throw new System.ArgumentException("IP address is invalid");
 
-            var stream = _streamManager.GetOrCreateStream(ipAddress);
+            var stream = streamManager.GetOrCreateStream(ipAddress);
             return new IRaypleCamera(ipAddress, stream);
         }
 
@@ -41,34 +44,40 @@ namespace IndustrialCameraManager.Vendors.IRayple
 
         public IEnumerable<ICameraInfo> Enumerate(CameraType type)
         {
-            var devices = EnumerateDevicesInternal(type);
-
-            foreach (var dev in devices)
+            IMV_EInterfaceType camType = type switch
             {
-                var info = ToCameraInfo(dev);
-                if (info != null)
-                    yield return info;
+                CameraType.GigE => IMV_EInterfaceType.interfaceTypeGige,
+                CameraType.Usb => IMV_EInterfaceType.interfaceTypeUsb3,
+                CameraType.GenTL => IMV_EInterfaceType.interfaceTypeAll,
+                CameraType.CameraLink => IMV_EInterfaceType.interfaceTypeCL,
+                _ => IMV_EInterfaceType.interfaceTypeAll
+            };
+
+            IMV_DeviceList deviceList = new IMVDefine.IMV_DeviceList();
+            var result = MyCamera.IMV_EnumDevices(ref deviceList, (uint)camType);
+            if (result == IMV_OK && deviceList.nDevNum > 0)
+            {
+                for (int i = 0; i < deviceList.nDevNum; i++)
+                {
+                    IMV_DeviceInfo camInfo = (IMV_DeviceInfo)Marshal.PtrToStructure(
+                            deviceList.pDevInfo + Marshal.SizeOf(typeof(IMV_DeviceInfo)) * i,
+                            typeof(IMV_DeviceInfo));
+                    yield return ToCameraInfo(camInfo);
+                }
             }
         }
 
-        private static List<object> EnumerateDevicesInternal(CameraType type)
-        {
-            return new List<object>();
-        }
-
-        private static IRaypleCameraInfo ToCameraInfo(object native)
+        private IRaypleCameraInfo ToCameraInfo(IMV_DeviceInfo native)
         {
             try
             {
-                dynamic dev = native;
                 return new IRaypleCameraInfo(
-                    serialNumber: dev.SerialNumber ?? string.Empty,
-                    modelName: dev.ModelName ?? string.Empty,
-                    userDefinedName: dev.UserDefinedName ?? string.Empty,
-                    cameraVersion: dev.CameraVersion ?? string.Empty,
-                    cameraKey: dev.CameraKey ?? string.Empty,
-                    native: native
-                );
+                    native.serialNumber,
+                    native.modelName,
+                    native.cameraName,
+                    "iRayple",
+                    native.deviceVersion,
+                    native);
             }
             catch
             {

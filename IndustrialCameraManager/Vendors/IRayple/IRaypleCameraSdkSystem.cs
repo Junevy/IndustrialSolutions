@@ -1,23 +1,24 @@
 using IndustrialCameraManager.Abstractions;
+using System.Threading;
 
 namespace IndustrialCameraManager.Vendors.IRayple
 {
     public class IRaypleCameraSdkSystem : ICameraSdkSystem
     {
-        private bool _disposed;
+        private int disposed;
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (Interlocked.CompareExchange(ref disposed, 1, 0) == 0)
             {
-                _disposed = true;
+                Interlocked.Exchange(ref disposed, 1);
                 Release();
             }
         }
 
         public void Initialize()
         {
-            _disposed = false;
+            Interlocked.Exchange(ref disposed, 0);
         }
 
         public void Release()

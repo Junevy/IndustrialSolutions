@@ -36,6 +36,7 @@ namespace IndustrialCameraManager.Vendors.HikVision
             {
                 CameraType.GigE => DeviceTLayerType.MvGigEDevice,
                 CameraType.Usb => DeviceTLayerType.MvUsbDevice,
+                CameraType.CameraLink => DeviceTLayerType.MvCameraLinkDevice,
                 CameraType.GenTL => DeviceTLayerType.MvGenTLCXPDevice,
                 _ => DeviceTLayerType.MvGigEDevice
                                             | DeviceTLayerType.MvUsbDevice
@@ -55,8 +56,7 @@ namespace IndustrialCameraManager.Vendors.HikVision
                         userDefinedName: cam.UserDefinedName,
                         manufacturer: "HikVision",
                         cameraVersion: cam.DeviceVersion,
-                        native: cam
-                        );
+                        native: cam);
                 }
             }
         }

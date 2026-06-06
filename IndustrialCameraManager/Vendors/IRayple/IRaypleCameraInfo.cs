@@ -1,4 +1,5 @@
 using IndustrialCameraManager.Abstractions;
+using static MVSDK_Net.IMVDefine;
 
 namespace IndustrialCameraManager.Vendors.IRayple
 {
@@ -14,12 +15,12 @@ namespace IndustrialCameraManager.Vendors.IRayple
 
         public string CameraVersion { get; }
 
-        internal object Native { get; }
+        internal IMV_DeviceInfo Native { get; }
 
         public string CameraKey { get; }
 
         public IRaypleCameraInfo(string serialNumber, string modelName, string userDefinedName,
-            string cameraVersion, string cameraKey, object native)
+            string cameraVersion, string cameraKey, IMV_DeviceInfo native)
         {
             this.SerialNumber = serialNumber;
             this.ModelName = modelName;

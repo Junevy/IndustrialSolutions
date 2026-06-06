@@ -21,6 +21,10 @@ namespace IndustrialCameraManager.Vendors.HikVision
         private readonly IFrameOut native = native;
         private int refCount = 1;
 
+        /// <summary>
+        /// 注意非托管内存 PixelDataPtr的生命周期，可能会随着相机缓存队列满而释放，
+        /// 建议使用更安全的属性 Data
+        /// </summary>
         public IntPtr PixelDataPtr => native.Image.PixelDataPtr;
 
         public byte[] Data => native.Image.PixelData;
@@ -41,10 +45,8 @@ namespace IndustrialCameraManager.Vendors.HikVision
                 native.Dispose();
         }
 
-        public void AddRef()
-            => Interlocked.Increment(ref refCount);
+        public void AddRef() => Interlocked.Increment(ref refCount);
         
-
         private ImagePixelFormat ConvertFormat(MvGvspPixelType pixelType)
         {
             return pixelType switch
@@ -66,7 +68,6 @@ namespace IndustrialCameraManager.Vendors.HikVision
             };
         }
 
-        public Bitmap GetBitmap()
-            => native.Image.ToBitmap();
+        public Bitmap GetBitmap() => native.Image.ToBitmap();
     }
 }

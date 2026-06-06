@@ -1,58 +1,66 @@
 using IndustrialCameraManager.Abstractions;
+using MVSDK_Net;
 using System;
 using System.Net;
+using System.Threading;
+using static MVSDK_Net.IMVDefine;
 
 namespace IndustrialCameraManager.Vendors.IRayple
 {
     public class IRaypleCamera : ICamera
     {
-        private volatile int _isOpen = 0;
-        private volatile int _isGrabbing = 0;
-        private volatile int _disposed = 0;
+        private volatile int disposed = 0;
+        private readonly ICameraStream stream;
+        private MyCamera camera;
+        private IMV_DeviceInfo cameraInfo;
+        private readonly IMV_FrameCallBack frameHandler;
 
-        private readonly ICameraStream _stream;
-        private object _cameraDevice;
-        private object _deviceInfo;
-        private Delegate _frameHandler;
+        public bool IsOpen => camera?.IMV_IsOpen() ?? false;
+        public bool IsGrabbing => camera?.IMV_IsGrabbing() ?? false;
 
-        public bool IsOpen => _isOpen == 1;
-        public bool IsGrabbing => _isGrabbing == 1;
-
-        public IRaypleCamera(object deviceInfo, ICameraStream stream)
+        public IRaypleCamera(IMV_DeviceInfo deviceInfo, ICameraStream stream)
         {
-            _deviceInfo = deviceInfo;
-            _stream = stream;
+            this.camera = new();
+            this.cameraInfo = deviceInfo;
+            this.stream = stream;
+            this.frameHandler = ProcessFrameCallBack;
+
+            // 是否可以直接创建 handle？
         }
 
         public IRaypleCamera(string ipAddress, ICameraStream stream)
         {
-            _stream = stream;
-            CreateCameraByIP(this, ipAddress);
+            if (string.IsNullOrEmpty(ipAddress) || IPAddress.TryParse(ipAddress, out _)) throw new ArgumentException(nameof(ipAddress));
+
+            try
+            {
+                this.stream = stream;
+                this.camera = new();
+                var result = camera.IMV_CreateHandle(IMV_ECreateHandleMode.modeByIPAddress, cameraStr: ipAddress);
+                if (result != IMV_OK) throw new ArgumentException($"Failed to create camera: {result}");
+            }
+            catch { throw; }
         }
 
         public CameraResult Open()
         {
-            if (_isOpen == 1)
+            if (this.IsOpen)
                 return CameraResult.Fail(-1, "Camera is already open");
 
             try
             {
-                if (_cameraDevice == null)
-                {
-                    var info = _deviceInfo as dynamic;
-                    var cameraKey = info?.CameraKey ?? info?.IPAddress ?? string.Empty;
+                var result = camera.IMV_CreateHandle(IMV_ECreateHandleMode.modeByCameraKey, cameraStr: cameraInfo.serialNumber);
+                //camera.info
 
-                    _cameraDevice = EvokeCameraCreate(cameraKey);
-                }
+                if (result != IMV_OK)
+                    return CameraResult.Fail(result, "Open camera failed");
 
-                if (_cameraDevice == null)
-                    return CameraResult.Fail(-1, "Failed to create camera device");
+                var openCameraResult = camera.IMV_Open();
 
-                EvokeCameraOpen(_cameraDevice);
-                EvokeFrameCallbackRegister(_cameraDevice, OnFrameGrabbedIntPtr);
+                if (openCameraResult != IMV_OK)
+                    return CameraResult.Fail(result, "Open camera failed");
 
-                _isOpen = 1;
-                return CameraResult.Success(0);
+                return CameraResult.Success(result);
             }
             catch (Exception e)
             {
@@ -62,52 +70,52 @@ namespace IndustrialCameraManager.Vendors.IRayple
 
         public CameraResult Close()
         {
-            if (_cameraDevice == null)
-                return CameraResult.Fail(-1, "Camera not initialized");
+            if (!this.IsOpen)
+                return CameraResult.Fail(-1, "Camera is not open");
 
             StopGrab();
 
             try
             {
-                EvokeFrameCallbackUnregister(_cameraDevice);
-                EvokeCameraClose(_cameraDevice);
-                return CameraResult.Success(0);
+                if (camera.IMV_IsOpen())
+                {
+                    var result = camera.IMV_Close();
+                    if (result != IMV_OK)
+                        return CameraResult.Fail(-1, "Camera close error");
+                }
+                return CameraResult.Success(IMV_OK, "Camera closed");
             }
             catch (Exception e)
             {
                 return CameraResult.Fail(-1, e.Message);
             }
-            finally
-            {
-                _isOpen = 0;
-            }
         }
 
         public CameraResult Grab()
         {
-            if (_isGrabbing == 1)
+            if (!this.IsOpen)
+                return CameraResult.Fail(-1, "Camera is not open");
+
+            if (this.IsGrabbing)
                 return CameraResult.Fail(-1, "Camera is already grabbing");
 
-            try
-            {
-                EvokeCameraStartGrabbing(_cameraDevice);
-                _isGrabbing = 1;
-                return CameraResult.Success(0);
-            }
-            catch (Exception ex)
-            {
-                StopGrab();
-                return CameraResult.Fail(-1, ex.Message);
-            }
+            var result = camera.IMV_AttachGrabbing(frameHandler, IntPtr.Zero);
+            if (result != IMV_OK)
+                return CameraResult.Fail(result, "Attach grabbing failed");
+
+            var startResult = camera.IMV_StartGrabbing();
+            if (startResult != IMV_OK)
+                return CameraResult.Fail(result, "Start grabbing failed");
+
+            return CameraResult.Success(startResult, "Start grabbing is successful");
         }
 
         public void StopGrab()
         {
-            if (_isGrabbing == 1)
-            {
-                try { EvokeCameraStopGrabbing(_cameraDevice); } catch { }
-                _isGrabbing = 0;
-            }
+            if (!this.IsOpen) return;
+
+            if (camera.IMV_IsGrabbing())
+                camera.IMV_StopGrabbing();
         }
 
         public CameraResult SetParam<T>(string paramName, T value)
@@ -115,10 +123,10 @@ namespace IndustrialCameraManager.Vendors.IRayple
             try
             {
                 var type = typeof(T);
-                if (type == typeof(int)) return SetIntParam(paramName, (int)(object)value);
-                if (type == typeof(float)) return SetFloatParam(paramName, (float)(object)value);
-                if (type == typeof(bool)) return SetBoolParam(paramName, (bool)(object)value);
-                if (type == typeof(string)) return SetStringParam(paramName, (string)(object)value);
+                if (type == typeof(int)) return SetParam(paramName, (int)(object)value);
+                if (type == typeof(float)) return SetParam(paramName, (float)(object)value);
+                if (type == typeof(bool)) return SetParam(paramName, (bool)(object)value);
+                if (type == typeof(string)) return SetParam(paramName, (string)(object)value);
                 return CameraResult.Fail(-1, "Unsupported parameter type");
             }
             catch (Exception ex)
@@ -127,26 +135,87 @@ namespace IndustrialCameraManager.Vendors.IRayple
             }
         }
 
+        /// <summary>
+        /// 操作相机参数
+        ///     option-0：Write（默认）,
+        ///     option-1：Read
+        /// </summary>
+        /// <param name="param">参数名</param>
+        /// <param name="option">模式</param>
+        /// <returns></returns>
+        private CameraResult CheckParam(string param, int option = 0)
+        {
+            if (!this.IsOpen)
+                return CameraResult.Fail(-1, "Camera is not open");
+
+            if (string.IsNullOrEmpty(param))
+                return CameraResult.Fail(-1, "The paramName or value is null");
+
+            if (!this.IsOpen) return CameraResult.Fail(-1, "The camera is not open");
+            if (!camera.IMV_FeatureIsAvailable(param)) return CameraResult.Fail(-1, "The param is not avalidable");
+
+            if (option == 0)
+            {
+                if (!camera.IMV_FeatureIsWriteable(param))
+                    return CameraResult.Fail(-1, "The param is not writeable");
+            }
+            else if (option == 1)
+            {
+                if (!camera.IMV_FeatureIsReadable(param))
+                    return CameraResult.Fail(-1, "The param is not readable");
+            }
+            else
+            {
+                throw new InvalidOperationException(param.ToString());
+            }
+            return CameraResult.Result(true, 0);
+        }
+
         public CameraResult SetParam(string paramName, int value)
-            => SetIntParam(paramName, value);
+        {
+            var result = CheckParam(paramName);
+            if (!result.IsSuccess) return result;
+            var r = camera.IMV_SetIntFeatureValue(paramName, value);
+            if (r != IMV_OK) return CameraResult.Fail(-1, "Set param is failed");
+            return CameraResult.Success(r, $"Set param:{paramName} is successful");
+        }
 
         public CameraResult SetParam(string paramName, float value)
-            => SetFloatParam(paramName, value);
+        {
+            var result = CheckParam(paramName);
+            if (!result.IsSuccess) return result;
+            var r = camera.IMV_SetDoubleFeatureValue(paramName, value);
+            if (r != IMV_OK) return CameraResult.Fail(-1, "Set param is failed");
+            return CameraResult.Success(r, $"Set param:{paramName} is successful");
+        }
 
         public CameraResult SetParam(string paramName, bool value)
-            => SetBoolParam(paramName, value);
+        {
+            var result = CheckParam(paramName);
+            if (!result.IsSuccess) return result;
+            var r = camera.IMV_SetBoolFeatureValue(paramName, value);
+            if (r != IMV_OK) return CameraResult.Fail(-1, "Set param is failed");
+            return CameraResult.Success(r, $"Set param:{paramName} is successful");
+        }
 
         public CameraResult SetParam(string paramName, string value)
-            => SetStringParam(paramName, value);
+        {
+            var result = CheckParam(paramName);
+            if (!result.IsSuccess) return result;
+            var r = camera.IMV_SetStringFeatureValue(paramName, value);
+            if (r != IMV_OK) return CameraResult.Fail(-1, "Set param is failed");
+            return CameraResult.Success(r, $"Set param:{paramName} is successful");
+        }
 
         public CameraResult SetEnumParam(string paramName, string value)
         {
             try
             {
-                if (string.IsNullOrEmpty(paramName) || string.IsNullOrEmpty(value))
-                    return CameraResult.Fail(-1, "The paramName or value is null");
-                EvokeSetEnumValue(_cameraDevice, paramName, value);
-                return CameraResult.Success(0);
+                var result = CheckParam(paramName);
+                if (!result.IsSuccess) return result;
+                var r = camera.IMV_SetEnumFeatureSymbol(paramName, value);
+                if (r != IMV_OK) return CameraResult.Fail(-1, "Set param is failed");
+                return CameraResult.Success(r, $"Set param:{paramName} is successful");
             }
             catch (Exception ex)
             {
@@ -156,6 +225,9 @@ namespace IndustrialCameraManager.Vendors.IRayple
 
         public T GetParam<T>(string paramName)
         {
+            if (!this.IsOpen) return default;
+            if (string.IsNullOrWhiteSpace(paramName)) return default;
+
             try
             {
                 var type = typeof(T);
@@ -168,20 +240,67 @@ namespace IndustrialCameraManager.Vendors.IRayple
             catch { return default; }
         }
 
+        private object GetStringParam(string paramName)
+        {
+            if (paramName.Length > 256) return string.Empty;
+
+            var pStr = string.Empty;
+            IMV_String str = new() { str = pStr };
+            var result = camera.IMV_GetStringFeatureValue(paramName, ref str);
+            if (result != IMV_OK) return string.Empty;
+            return str.str;
+        }
+
+        private bool GetBoolParam(string paramName)
+        {
+            var pValue = false;
+            var result = camera.IMV_GetBoolFeatureValue(paramName, ref pValue);
+
+            if (result != IMV_OK) return false;
+            return pValue;
+        }
+
+        private float GetFloatParam(string paramName)
+        {
+            var pValue = double.MinValue;
+            var result = camera.IMV_GetDoubleFeatureValue(paramName, ref pValue);
+
+            if (result != IMV_OK) return int.MinValue;
+            return (float)pValue;
+        }
+
+        private int GetIntParam(string paramName)
+        {
+            var pValue = long.MinValue;
+            var result = camera.IMV_GetIntFeatureValue(paramName, ref pValue);
+
+            if (result != IMV_OK) return int.MinValue;
+            return (int)pValue;
+        }
+
         public string GetEnumValue(string paramName)
         {
-            try { return EvokeGetEnumValue(_cameraDevice, paramName); }
-            catch { return "ERROR"; }
+            if (paramName.Length > 256) return string.Empty;
+
+            var pStr = string.Empty;
+            IMV_String str = new() { str = pStr };
+            var result = camera.IMV_GetEnumFeatureSymbol(paramName, ref str);
+            if (result != IMV_OK) return string.Empty;
+            return str.str;
         }
 
         public CameraResult ExecuteCommand(string command)
         {
-            if (string.IsNullOrEmpty(command))
-                return CameraResult.Fail(-1, "Check the command");
+            if (!this.IsOpen)
+                return CameraResult.Fail(-1, "Camera is not open");
+
+            if (string.IsNullOrEmpty(command)) return CameraResult.Fail(-1, "Check the command");
             try
             {
-                EvokeExecuteCommand(_cameraDevice, command);
-                return CameraResult.Success(0);
+                var result = camera.IMV_ExecuteCommandFeature(command);
+                if (result == IMV_OK)
+                    return CameraResult.Success(result);
+                return CameraResult.Fail(result, "Execute command error");
             }
             catch (Exception ex)
             {
@@ -191,92 +310,30 @@ namespace IndustrialCameraManager.Vendors.IRayple
 
         public void Dispose()
         {
-            if (System.Threading.Interlocked.CompareExchange(ref _disposed, 1, 0) == 1)
+            if (Interlocked.CompareExchange(ref disposed, 1, 0) == 1)
                 return;
 
-            if (_cameraDevice != null)
+            if (camera != null && Interlocked.CompareExchange(ref disposed, 1, 0) == 0)
             {
-                Close();
-                EvokeCameraDestroy(_cameraDevice);
-                _cameraDevice = null;
+                try
+                {
+                    StopGrab();
+                    Close();
+                    camera.IMV_DestroyHandle();
+                    camera = null;
+                }
+                catch (Exception ex)
+                {
+                }
             }
-            _isOpen = 0;
-            _isGrabbing = 0;
         }
 
-        private void OnFrameGrabbedIntPtr(IntPtr framePtr)
+        private void ProcessFrameCallBack(ref IMV_Frame pFrame, IntPtr pUser)
         {
-            if (framePtr == IntPtr.Zero) return;
-            var wrapped = new IRaypleFrameWrapper(framePtr);
-            _stream.Publish(wrapped);
+            if (pFrame.pData == IntPtr.Zero) return;
+            var wrapped = new IRaypleFrameWrapper(pFrame);
+            camera.IMV_ReleaseFrame(ref pFrame);
+            stream.Publish(wrapped);
         }
-
-        private CameraResult SetIntParam(string key, int value)
-        {
-            try { EvokeSetIntValue(_cameraDevice, key, value); return CameraResult.Success(0); }
-            catch (Exception ex) { return CameraResult.Fail(-1, ex.Message); }
-        }
-
-        private CameraResult SetFloatParam(string key, float value)
-        {
-            try { EvokeSetFloatValue(_cameraDevice, key, value); return CameraResult.Success(0); }
-            catch (Exception ex) { return CameraResult.Fail(-1, ex.Message); }
-        }
-
-        private CameraResult SetBoolParam(string key, bool value)
-        {
-            try { EvokeSetBoolValue(_cameraDevice, key, value); return CameraResult.Success(0); }
-            catch (Exception ex) { return CameraResult.Fail(-1, ex.Message); }
-        }
-
-        private CameraResult SetStringParam(string key, string value)
-        {
-            try { EvokeSetStringValue(_cameraDevice, key, value); return CameraResult.Success(0); }
-            catch (Exception ex) { return CameraResult.Fail(-1, ex.Message); }
-        }
-
-        private int GetIntParam(string key)
-        {
-            try { return EvokeGetIntValue(_cameraDevice, key); } catch { return 0; }
-        }
-
-        private float GetFloatParam(string key)
-        {
-            try { return EvokeGetFloatValue(_cameraDevice, key); } catch { return 0f; }
-        }
-
-        private bool GetBoolParam(string key)
-        {
-            try { return EvokeGetBoolValue(_cameraDevice, key); } catch { return false; }
-        }
-
-        private string GetStringParam(string key)
-        {
-            try { return EvokeGetStringValue(_cameraDevice, key); } catch { return string.Empty; }
-        }
-
-        private static void CreateCameraByIP(IRaypleCamera parent, string ipAddress)
-        {
-        }
-
-        private static object EvokeCameraCreate(string cameraKey) => null;
-        private static void EvokeCameraOpen(object device) { }
-        private static void EvokeCameraClose(object device) { }
-        private static void EvokeCameraStartGrabbing(object device) { }
-        private static void EvokeCameraStopGrabbing(object device) { }
-        private static void EvokeCameraDestroy(object device) { (device as IDisposable)?.Dispose(); }
-        private static void EvokeFrameCallbackRegister(object device, Action<IntPtr> handler) { }
-        private static void EvokeFrameCallbackUnregister(object device) { }
-        private static void EvokeSetIntValue(object device, string key, int value) { }
-        private static void EvokeSetFloatValue(object device, string key, float value) { }
-        private static void EvokeSetBoolValue(object device, string key, bool value) { }
-        private static void EvokeSetStringValue(object device, string key, string value) { }
-        private static void EvokeSetEnumValue(object device, string key, string value) { }
-        private static int EvokeGetIntValue(object device, string key) => 0;
-        private static float EvokeGetFloatValue(object device, string key) => 0f;
-        private static bool EvokeGetBoolValue(object device, string key) => false;
-        private static string EvokeGetStringValue(object device, string key) => string.Empty;
-        private static string EvokeGetEnumValue(object device, string key) => string.Empty;
-        private static void EvokeExecuteCommand(object device, string command) { }
     }
 }

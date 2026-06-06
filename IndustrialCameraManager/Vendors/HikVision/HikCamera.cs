@@ -2,6 +2,7 @@ using IndustrialCameraManager.Abstractions;
 using Microsoft.Win32;
 using MvCameraControl;
 using System;
+using System.Net;
 using System.Threading;
 
 namespace IndustrialCameraManager.Vendors.HikVision
@@ -29,13 +30,15 @@ namespace IndustrialCameraManager.Vendors.HikVision
 
         public HikCamera(string ipAddress, string netExport, ICameraStream cameraStream)
         {
+            if (string.IsNullOrEmpty(ipAddress) || IPAddress.TryParse(ipAddress, out _)) throw new ArgumentException(nameof(ipAddress));
+
             try
             {
                 this.camera = DeviceFactory.CreateDeviceByIp(ipAddress, netExport);
                 this.stream = cameraStream;
                 Interlocked.Increment(ref isCreate);
             }
-            catch (MvException)
+            catch (Exception)
             {
                 throw;
             }
@@ -49,6 +52,7 @@ namespace IndustrialCameraManager.Vendors.HikVision
                     camera = DeviceFactory.CreateDevice(deviceInfo);
 
                 int result = camera.Open();
+
                 if (result != MvError.MV_OK)
                     return CameraResult.Fail(result, "Open camera failed");
 

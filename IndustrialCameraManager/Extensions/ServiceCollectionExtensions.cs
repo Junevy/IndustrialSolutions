@@ -10,13 +10,16 @@ namespace IndustrialCameraManager.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddIndustrialCamera(this IServiceCollection services, Action<CameraOptions> configure = null)
+        public static IServiceCollection AddIndustrialCamera(this IServiceCollection services, Action<CameraOptions> configure = null, Action<StreamOptions> streamConfigure = null)
         {
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
             var options = new CameraOptions();
             configure?.Invoke(options);
+
+            var streamOptions = new StreamOptions();
+            streamConfigure?.Invoke(streamOptions);
 
             var hasVendor = false;
 
@@ -43,6 +46,7 @@ namespace IndustrialCameraManager.Extensions
 
             return services;
         }
+
 
         public static IServiceCollection AddHikVisionCamera(this IServiceCollection services)
         {

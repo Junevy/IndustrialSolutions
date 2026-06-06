@@ -7,5 +7,6 @@ namespace IndustrialCameraManager.Extensions
         public bool EnableIRayple { get; set; }
 
         public bool EnableBasler { get; set; }
+
     }
 }
