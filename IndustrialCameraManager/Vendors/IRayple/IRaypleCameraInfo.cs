@@ -19,6 +19,8 @@ namespace IndustrialCameraManager.Vendors.IRayple
 
         public string CameraKey { get; }
 
+        public CameraType InterfaceType => GetCameraInterface();
+
         public IRaypleCameraInfo(string serialNumber, string modelName, string userDefinedName,
             string cameraVersion, string cameraKey, IMV_DeviceInfo native)
         {
@@ -28,6 +30,18 @@ namespace IndustrialCameraManager.Vendors.IRayple
             this.CameraVersion = cameraVersion;
             this.CameraKey = cameraKey;
             this.Native = native;
+        }
+
+        private CameraType GetCameraInterface()
+        {
+            return Native.nCameraType switch
+            {
+                IMV_ECameraType.typeGigeCamera => CameraType.GigE,
+                IMV_ECameraType.typeCLCamera => CameraType.CameraLink,
+                IMV_ECameraType.typeU3vCamera => CameraType.Usb,
+                IMV_ECameraType.typePCIeCamera => CameraType.GenTL,
+                _ => CameraType.ALL,
+            };
         }
 
         public bool SetDefinedName(string name)

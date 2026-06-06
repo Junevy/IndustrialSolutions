@@ -9,14 +9,15 @@ namespace IndustrialCameraManager.Vendors.IRayple
 {
     public class IRaypleCamera : ICamera
     {
-        private volatile int disposed = 0;
-        private readonly ICameraStream stream;
-        private MyCamera camera;
-        private IMV_DeviceInfo cameraInfo;
-        private readonly IMV_FrameCallBack frameHandler;
+        protected volatile int disposed = 0;
+        protected ICameraStream stream;
+        protected MyCamera camera;
+        protected IMV_DeviceInfo cameraInfo;
+        protected readonly IMV_FrameCallBack frameHandler;
 
         public bool IsOpen => camera?.IMV_IsOpen() ?? false;
         public bool IsGrabbing => camera?.IMV_IsGrabbing() ?? false;
+        protected IRaypleCamera() { }
 
         public IRaypleCamera(IMV_DeviceInfo deviceInfo, ICameraStream stream)
         {
@@ -27,8 +28,7 @@ namespace IndustrialCameraManager.Vendors.IRayple
 
             // 是否可以直接创建 handle？
         }
-
-        public IRaypleCamera(string ipAddress, ICameraStream stream)
+        public IRaypleCamera(string ipAddress, ICameraStream stream) : base()
         {
             if (string.IsNullOrEmpty(ipAddress) || IPAddress.TryParse(ipAddress, out _)) throw new ArgumentException(nameof(ipAddress));
 
@@ -41,6 +41,7 @@ namespace IndustrialCameraManager.Vendors.IRayple
             }
             catch { throw; }
         }
+
 
         public CameraResult Open()
         {

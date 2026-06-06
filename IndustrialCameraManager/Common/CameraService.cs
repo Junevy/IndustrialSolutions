@@ -67,13 +67,13 @@ namespace IndustrialCameraManager.Common
         /// <returns>
         /// 是否成功订阅
         /// </returns>
-        public bool SubscribeFrameStream(string serialNumber, string subKey, Func<IFrame, Task> processFrame)
+        public bool SubscribeFrameStream(string serialNumber, string subKey, Func<IFrame, Task> processFrame, int capacity = 5)
         {
             if (processFrame == null) return false;
             if (string.IsNullOrEmpty(serialNumber) || string.IsNullOrEmpty(subKey)) return false;
             if (!streamManager.GetStream(serialNumber, out var stream)) return false;
 
-            stream.Subscribe(subKey, processFrame);
+            stream.Subscribe(subKey, processFrame, capacity);
             return true;
         }
 

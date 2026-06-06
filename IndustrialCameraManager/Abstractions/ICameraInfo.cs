@@ -14,5 +14,7 @@ namespace IndustrialCameraManager.Abstractions
         string Manufacturer { get; }
 
         string CameraVersion { get; }
+
+        CameraType InterfaceType { get; }
     }
 }

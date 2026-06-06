@@ -17,6 +17,8 @@ namespace IndustrialCameraManager.Vendors.HikVision
 
         internal IDeviceInfo Native { get; }
 
+        public CameraType InterfaceType => GetCameraType();
+
         public HikCameraInfo(string serialNumber, string modelName, string userDefinedName,
             string manufacturer, string cameraVersion, IDeviceInfo native)
         {
@@ -26,6 +28,19 @@ namespace IndustrialCameraManager.Vendors.HikVision
             this.Manufacturer = manufacturer;
             this.CameraVersion = cameraVersion;
             this.Native = native;
+        }
+
+        private CameraType GetCameraType()
+        {
+            return Native.TLayerType switch
+            {
+                DeviceTLayerType.MvVirGigEDevice => CameraType.GigE,
+                DeviceTLayerType.MvUsbDevice => CameraType.Usb,
+                DeviceTLayerType.MvCameraLinkDevice => CameraType.CameraLink,
+                DeviceTLayerType.MvGenTLCameraLinkDevice => CameraType.GenTL,
+                DeviceTLayerType.MvGenTLCXPDevice => CameraType.Unknown,
+                _ => CameraType.Unknown,
+            };
         }
 
         public bool SetDefinedName(string name)

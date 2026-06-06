@@ -9,6 +9,7 @@ namespace IndustrialCameraManager.Abstractions
         Usb,
         GenTL,
         CameraLink,
-        ALL
+        ALL,
+        Unknown
     }
 }

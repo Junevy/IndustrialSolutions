@@ -13,10 +13,12 @@ namespace IndustrialCameraManager.Common
     public class CameraStream : ICameraStream
     {
         private readonly ConcurrentDictionary<string, CameraStreamSuber> subscribers = new();
+
         // 订阅数量
         public int SubscriberCount => subscribers.Count;
 
-        public void Subscribe(string key, Func<IFrame, Task> handler, int capacity = 5)
+
+        public void Subscribe(string key, Func<IFrame, Task> handler, int capacity)
         {
             var channel = Channel.CreateBounded<IFrame>(
                 new BoundedChannelOptions(capacity)

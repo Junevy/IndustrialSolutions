@@ -12,12 +12,12 @@ namespace IndustrialCameraManager.Vendors.HikVision
     /// </summary>
     public class HikCamera : ICamera
     {
-        private volatile int isCreate = 0;
-        private volatile int isGrabbing = 0;
+        protected volatile int isCreate = 0;
+        protected volatile int isGrabbing = 0;
 
-        private IDevice camera;
-        private readonly IDeviceInfo deviceInfo;
-        private readonly ICameraStream stream;
+        protected IDevice camera;
+        protected readonly IDeviceInfo deviceInfo;
+        protected ICameraStream stream;
 
         public bool IsOpen => camera != null && (camera?.IsConnected ?? false) && isCreate == 1;
         public bool IsGrabbing => Interlocked.CompareExchange(ref isGrabbing, 1, 1) == 1;
@@ -28,7 +28,7 @@ namespace IndustrialCameraManager.Vendors.HikVision
             this.stream = cameraStream;
         }
 
-        public HikCamera(string ipAddress, string netExport, ICameraStream cameraStream)
+        public HikCamera(string ipAddress, string netExport, ICameraStream cameraStream) : base()
         {
             if (string.IsNullOrEmpty(ipAddress) || IPAddress.TryParse(ipAddress, out _)) throw new ArgumentException(nameof(ipAddress));
 

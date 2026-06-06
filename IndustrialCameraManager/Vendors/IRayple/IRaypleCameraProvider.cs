@@ -5,6 +5,7 @@ using System.Linq;
 using MVSDK_Net;
 using static MVSDK_Net.IMVDefine;
 using System.Runtime.InteropServices;
+using IndustrialCameraManager.Vendors.HikVision;
 
 namespace IndustrialCameraManager.Vendors.IRayple
 {
@@ -23,6 +24,7 @@ namespace IndustrialCameraManager.Vendors.IRayple
                 throw new System.ArgumentException("Invalid camera info type.");
 
             var stream = streamManager.GetOrCreateStream(info.SerialNumber);
+
             return new IRaypleCamera(irInfo.Native, stream);
         }
 

@@ -28,7 +28,7 @@ namespace IndustrialCameraManager.Abstractions
         /// <param name="serialNumber">相机序列号</param>
         /// <param name="handler">处理函数</param>
         /// <param name="capacity">图像缓存容量</param>
-        void Subscribe(string serialNumber, Func<IFrame, Task> handler, int capacity = 5);
+        void Subscribe(string serialNumber, Func<IFrame, Task> handler, int capacity);
 
         /// <summary>
         /// 取消订阅指定相机的帧的处理数据
