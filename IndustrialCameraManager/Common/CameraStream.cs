@@ -12,13 +12,17 @@ namespace IndustrialCameraManager.Common
     /// </summary>
     public class CameraStream : ICameraStream
     {
+        /// <summary>
+        /// Key: 订阅者自定义的订阅名称
+        /// Value：订阅者
+        /// </summary>
         private readonly ConcurrentDictionary<string, CameraStreamSuber> subscribers = new();
 
         // 订阅数量
         public int SubscriberCount => subscribers.Count;
 
 
-        public void Subscribe(string key, Func<IFrame, Task> handler, int capacity)
+        public void Subscribe(string subberKey, int capacity, Func<IFrame, Task> handler, Action<Exception> whenException = null)
         {
             var channel = Channel.CreateBounded<IFrame>(
                 new BoundedChannelOptions(capacity)
@@ -26,7 +30,7 @@ namespace IndustrialCameraManager.Common
                     FullMode = BoundedChannelFullMode.DropOldest
                 });
 
-            if (subscribers.TryRemove(key, out var oldSuber))
+            if (subscribers.TryRemove(subberKey, out var oldSuber))
                 oldSuber.Dispose();
 
             var cts = new CancellationTokenSource();
@@ -45,7 +49,9 @@ namespace IndustrialCameraManager.Common
                             catch (Exception ex)
                             {
                                 // 处理异常...
-                                Console.WriteLine(ex.Message);
+                                if (whenException != null)
+                                    whenException(ex);
+                                else throw;
                             }
                             finally
                             {
@@ -56,7 +62,7 @@ namespace IndustrialCameraManager.Common
                 }
                 catch (OperationCanceledException) { }
             });
-            subscribers[key] = new CameraStreamSuber(channel, cts, worker);
+            subscribers[subberKey] = new CameraStreamSuber(channel, cts, worker);
         }
 
         public void Publish(IFrame frame)
@@ -74,9 +80,9 @@ namespace IndustrialCameraManager.Common
             frame.Dispose();
         }
 
-        public bool Unsubscribe(string key)
+        public bool Unsubscribe(string subberKey)
         {
-            if (subscribers.TryRemove(key, out var suber))
+            if (subscribers.TryRemove(subberKey, out var suber))
             {
                 suber.Dispose();
                 return true;

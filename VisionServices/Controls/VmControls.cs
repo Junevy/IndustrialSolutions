@@ -6,7 +6,7 @@ using VMControls.WPF.Release;
 
 namespace VisionServices.Controls
 {
-    internal class VmControls : IControl
+    internal class VmControls : IVisionControls
     {
         private VmRenderControl imageRender = new();
         private VmMainViewConfigControl mainRender = new();
@@ -55,7 +55,6 @@ namespace VisionServices.Controls
             {
                 render.SetBackground(@"D:\iCloud\iCloudDrive\WorkSpace\Resource\Images\Resources\whiteCheckBoard7.png");
             }
-
         }
 
         public bool SetModuSource(FrameworkElement control, object moduSource)

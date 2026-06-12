@@ -6,7 +6,7 @@ namespace VisionServices.Services.VisionMaster
 {
     public class VmSolutionService : ISolution, IGroupSolution
     {
-        public VmSolution Solution => VmSolution.Instance;
+        private VmSolution Solution => VmSolution.Instance;
 
         public VmSolutionService()
         {
@@ -32,41 +32,23 @@ namespace VisionServices.Services.VisionMaster
 
         public void Save() => VmSolution.Save();
 
-        public void SaveAs(string targetPath)
-        {
-            throw new NotImplementedException();
-        }
-
-        public object? GetModuResult(string algorithmName, string paramName, string groupName = "流程1")
-        {
-            if (string.IsNullOrEmpty(paramName))
-                return default;
-            return GetAlgorithmResult(algorithmName, "ModuResult." + paramName, groupName);
-        }
+        public void SaveAs(string targetPath) => VmSolution.SaveAs(targetPath);
 
         public T? GetModuResult<T>(string algorithmName, string paramName, string groupName = "流程1")
         {
-            if (string.IsNullOrEmpty(paramName))
-                return default;
-            return GetAlgorithmResult<T>(algorithmName, "ModuResult." + paramName, groupName);
-        }
 
-        public object? GetAlgorithmResult(string algorithmName, string paramName, string groupName = "流程1")
-            => GetAlgorithmResult<object>(algorithmName, paramName, groupName);
-
-        public T? GetAlgorithmResult<T>(string algorithmName, string paramName, string groupName = "流程1")
-        {
             if (string.IsNullOrEmpty(algorithmName)
                 || string.IsNullOrEmpty(paramName)
                 || string.IsNullOrEmpty(groupName))
                 return default;
 
-            var algorithm = Solution[groupName + "." + algorithmName];
+            var algorithm = Solution[$"{groupName}.{algorithmName}"];
             if (algorithm == null)
                 return default;
 
             var result = GetNestedPropertyValue(algorithm, paramName);
             return result == null ? default : (T)result;
+
         }
 
         public T? GetGroupOutput<T>(string paramName, string groupName = "流程1")
@@ -98,10 +80,10 @@ namespace VisionServices.Services.VisionMaster
 
                 PropertyInfo? prop = currentType.GetProperty(propName);
                 if (prop == null) return null;
-                
+
                 currentProperty = prop?.GetValue(currentProperty);
                 if (currentProperty == null) return null;
-                
+
                 currentType = currentProperty.GetType();
                 if (currentType == null) return null;
             }
@@ -113,8 +95,19 @@ namespace VisionServices.Services.VisionMaster
             Solution.Dispose();
         }
 
-        public object? GetModule(string moduleName)
-            => this.Solution[moduleName];
-        
+        public bool SetModuParam<T>(string paramName, T value, string groupName = "流程1")
+        {
+            throw new NotImplementedException();
+        }
+
+        public object? GetModule(string moduleName, string groupName = "流程1") => this.Solution[$"{groupName}.{moduleName}"];
+
+        public T? GetModule<T>(string moduleName, string groupName = "流程1") where T : class => this.Solution[$"{groupName}.{moduleName}"] as T;
+
+        //public void test()
+        //{
+        //    ImageSourceModuleCs.ImageSourceModuleTool
+        //}
+
     }
 }

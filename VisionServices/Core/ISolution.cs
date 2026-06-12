@@ -13,21 +13,13 @@
         public void Run();
 
         public void RunAsync();
+        
+        public bool SetModuParam<T>(string paramName, T value, string groupName = "流程1");
 
-        //public bool SetParam<T>(string key, T value);
-
-        public object? GetModuResult(string algorithmName, string paramName, string groupName = "流程1");
         public T? GetModuResult<T>(string algorithmName, string paramName, string groupName = "流程1");
 
-        public object? GetAlgorithmResult(string algorithmName, string paramName, string groupName = "流程1");
-        public T? GetAlgorithmResult<T>(string algorithmName, string paramName, string groupName = "流程1");
+        public object? GetModule(string moduleName,string groupName = "流程1");
 
-
-        public object? GetModule(string moduleName);
-
-        //public K GetListResult<T, K>(string algorithmName, string paramName, string groupName = "流程1");
-
-        //public Dictionary<string, object> GetResults(string algorithmName, string paramsName);
-
+        public T? GetModule<T>(string moduleName, string groupName = "流程1") where T : class;
     }
 }

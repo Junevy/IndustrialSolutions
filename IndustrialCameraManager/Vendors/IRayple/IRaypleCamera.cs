@@ -241,8 +241,11 @@ namespace IndustrialCameraManager.Vendors.IRayple
             catch { return default; }
         }
 
-        private object GetStringParam(string paramName)
+        private string GetStringParam(string paramName)
         {
+            //var r = CheckParam(paramName, 1);
+            //if (!r.IsSuccess) return string.Empty;
+
             if (paramName.Length > 256) return string.Empty;
 
             var pStr = string.Empty;
@@ -336,5 +339,7 @@ namespace IndustrialCameraManager.Vendors.IRayple
             camera.IMV_ReleaseFrame(ref pFrame);
             stream.Publish(wrapped);
         }
+
+        public string GetSerialNumber() => cameraInfo.serialNumber;
     }
 }

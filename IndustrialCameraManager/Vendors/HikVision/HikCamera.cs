@@ -169,7 +169,6 @@ namespace IndustrialCameraManager.Vendors.HikVision
         public CameraResult SetParam(string paramName, float value)
         {
             int result = camera.Parameters.SetFloatValue(paramName, value);
-
             bool success = result == MvError.MV_OK;
 
             return CameraResult.Result(
@@ -275,5 +274,6 @@ namespace IndustrialCameraManager.Vendors.HikVision
             Interlocked.CompareExchange(ref isGrabbing, 0, 1);
         }
 
+        public string GetSerialNumber() => deviceInfo.SerialNumber;
     }
 }

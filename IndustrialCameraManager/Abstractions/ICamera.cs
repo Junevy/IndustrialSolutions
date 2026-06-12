@@ -53,6 +53,10 @@ namespace IndustrialCameraManager.Abstractions
         /// </summary>
         void StopGrab();
 
+
+        string GetSerialNumber();
+
+
         /// <summary>
         /// 设置参数
         /// </summary>

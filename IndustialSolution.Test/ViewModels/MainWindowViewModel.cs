@@ -44,7 +44,7 @@ namespace IndustialSolution.Test.ViewModels
                 return;
             }
 
-            var result = cameraService.OpenCamera(SelectedCameraInfo);
+            var result = cameraService.OpenCamera(SelectedCameraInfo, "test");
             if (!result.IsSuccess)
             {
                 MessageBox.Show(result.Message);

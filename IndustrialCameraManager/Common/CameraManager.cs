@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 namespace IndustrialCameraManager.Common
 {
     /// <summary>
-    /// 相机管理器
+    /// 相机缓存管理
     /// </summary>
     public class CameraManager : IDisposable
     {
@@ -17,23 +17,23 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 注册相机实例
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">相机序列号</param>
         /// <param name="camera">相机实例</param>
         /// <exception cref="ArgumentNullException">
         /// <c>serialNumber</c> 或 <c>camera</c> 为 <c>null</c>
         /// </exception>
-        public void Register(string serialNumber, ICamera camera)
+        public void Register(string cameraKey, ICamera camera)
         {
-            if (string.IsNullOrEmpty(serialNumber))
-                throw new ArgumentNullException(nameof(serialNumber));
+            if (string.IsNullOrEmpty(cameraKey))
+                throw new ArgumentNullException(nameof(cameraKey));
 
-            cameras[serialNumber] = camera ?? throw new ArgumentNullException(nameof(camera));
+            cameras[cameraKey] = camera ?? throw new ArgumentNullException(nameof(camera));
         }
 
         /// <summary>
         /// 尝试获取相机实例
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">相机序列号</param>
         /// <param name="camera">相机实例</param>
         /// <returns>
         /// 是否成功获取相机实例
@@ -41,33 +41,35 @@ namespace IndustrialCameraManager.Common
         /// <exception cref="ArgumentNullException">
         /// <c>serialNumber</c> 为 <c>null</c>
         /// </exception>
-        public bool TryGet(string serialNumber, out ICamera camera)
+        public bool TryGet(string cameraKey, out ICamera camera)
         {
             camera = null;
 
-            if (string.IsNullOrEmpty(serialNumber))
+            if (string.IsNullOrEmpty(cameraKey))
                 return false;
 
-            return cameras.TryGetValue(serialNumber, out camera);
+            return cameras.TryGetValue(cameraKey, out camera);
         }
 
         /// <summary>
         /// 移除相机实例
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">相机序列号</param>
         /// <returns>
         /// 是否成功移除相机实例
         /// </returns>
         /// <exception cref="ArgumentNullException">
         /// <c>serialNumber</c> 为 <c>null</c>
         /// </exception>
-        public bool Remove(string serialNumber)
+        public bool Remove(string cameraKey)
         {
-            if (string.IsNullOrEmpty(serialNumber))
-                throw new ArgumentNullException(nameof(serialNumber));
+            if (string.IsNullOrEmpty(cameraKey))
+                throw new ArgumentNullException(nameof(cameraKey));
 
-            if (cameras.TryRemove(serialNumber, out var cam))
+            if (cameras.TryRemove(cameraKey, out var cam))
             {
+                cam.StopGrab();
+                cam.Close();
                 cam.Dispose();
                 return true;
             }

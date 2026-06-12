@@ -14,9 +14,14 @@ namespace IndustrialCameraManager.Common
         public CancellationTokenSource Cts { get; private set; } = cts;
         public Task Subber { get; private set; } = worker;
 
+        //public string SubscribedSerialNumber { get; set; } = subscribedSerilNumber;
+
+
         public void Dispose()
         {
             Channel.Writer.TryComplete();
+            //Cts.Cancel();
+            //Subber.
             Cts.Cancel();
             Cts.Dispose();
         }

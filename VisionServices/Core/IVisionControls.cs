@@ -2,7 +2,7 @@
 
 namespace VisionServices.Core
 {
-    public interface IControl
+    public interface IVisionControls
     {
         public FrameworkElement ImageRender { get; }
 

@@ -1,6 +1,8 @@
 using IndustrialCameraManager.Abstractions;
+using MvCameraControl;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Threading.Tasks;
 
 namespace IndustrialCameraManager.Common
@@ -31,20 +33,20 @@ namespace IndustrialCameraManager.Common
         /// <returns>
         /// 相机操作结果
         /// </returns>
-        public CameraResult OpenCamera(ICameraInfo info)
+        public CameraResult OpenCamera(ICameraInfo info, string cameraKey)
         {
             if (info == null)
                 return CameraResult.Fail(-1, "The camera info is null");
 
-            if (string.IsNullOrEmpty(info.SerialNumber))
+            if (string.IsNullOrEmpty(cameraKey))
                 return CameraResult.Fail(-1, "The camera serial number is empty");
 
             try
             {
-                if (!cameraManager.TryGet(info.SerialNumber, out var camera))
+                if (!cameraManager.TryGet(cameraKey, out var camera))
                 {
                     camera = provider.Create(info);
-                    cameraManager.Register(info.SerialNumber, camera);
+                    cameraManager.Register(cameraKey, camera);
                 }
 
                 if (camera.IsOpen)
@@ -61,34 +63,38 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 订阅指定相机的图像帧数据
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">需要订阅图像流的相机序列号</param>
         /// <param name="subKey">订阅者标识</param>
         /// <param name="processFrame">处理图像帧的回调函数</param>
+        /// <param name="whenException">异常发生处理回调方法，当不提供异常处理回调时，将抛出该异常</param>
+        /// <param name="capacity">订阅Channel的边界（容量）</param>
         /// <returns>
         /// 是否成功订阅
         /// </returns>
-        public bool SubscribeFrameStream(string serialNumber, string subKey, Func<IFrame, Task> processFrame, int capacity = 5)
+        public bool SubscribeFrameStream(string cameraKey, string subKey, Func<IFrame, Task> processFrame, Action<Exception> whenException = null, int capacity = 5)
         {
             if (processFrame == null) return false;
-            if (string.IsNullOrEmpty(serialNumber) || string.IsNullOrEmpty(subKey)) return false;
-            if (!streamManager.GetStream(serialNumber, out var stream)) return false;
+            if (string.IsNullOrEmpty(cameraKey) || string.IsNullOrEmpty(subKey)) return false;
 
-            stream.Subscribe(subKey, processFrame, capacity);
+            var serialNumber = GetOnlineCameraSerialNumber(cameraKey);
+            if (string.IsNullOrEmpty(serialNumber)) return false;
+            if (!streamManager.GetStream(serialNumber, out var stream)) return false;
+            stream.Subscribe(subKey, capacity, processFrame, whenException);
             return true;
         }
 
         /// <summary>
         /// 取消订阅指定相机的图像帧数据
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">相机序列号</param>
         /// <param name="subKey">订阅者标识</param>
         /// <returns>
         /// 是否成功取消订阅
         /// </returns>
-        public bool UnsubscribeFrameStream(string serialNumber, string subKey)
+        public bool UnsubscribeFrameStream(string cameraKey, string subKey)
         {
-            if (string.IsNullOrEmpty(serialNumber) || string.IsNullOrEmpty(subKey)) return false;
-            if (!streamManager.GetStream(serialNumber, out var stream)) return false;
+            if (string.IsNullOrEmpty(cameraKey) || string.IsNullOrEmpty(subKey)) return false;
+            if (!streamManager.GetStream(cameraKey, out var stream)) return false;
 
             return stream.Unsubscribe(subKey);
         }
@@ -96,13 +102,13 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 打开指定相机的图像采集功能
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">注册的相机名称</param>
         /// <returns>
         /// 相机操作结果
         /// </returns>
-        public CameraResult StartGrab(string serialNumber)
+        public CameraResult StartGrab(string cameraKey)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
             try
@@ -119,13 +125,13 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 停止指定相机的图像采集功能
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">注册的相机名称</param>
         /// <returns>
         /// 相机操作结果
         /// </returns>
-        public CameraResult StopGrab(string serialNumber)
+        public CameraResult StopGrab(string cameraKey)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
             camera.StopGrab();
@@ -135,66 +141,72 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 断开连接指定相机
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">相机序列号</param>
         /// <returns>
         /// 相机操作结果
         /// </returns>
-        public CameraResult Close(string serialNumber)
+        public CameraResult Close(string cameraKey)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera))
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera))
                 return CameraResult.Fail(-1, ErrorMsg);
 
             var closeResult = camera.Close();
-            if (closeResult.IsSuccess)
-                cameraManager.Remove(serialNumber);
+            //if (closeResult.IsSuccess)
+            cameraManager.Remove(cameraKey);
 
             return closeResult;
+        }
+
+        public string GetOnlineCameraSerialNumber(string cameraKey)
+        {
+            cameraManager.TryGet(cameraKey, out var camera);
+            return camera.GetSerialNumber();
         }
 
         /// <summary>
         /// 设置相机的指定参数
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">相机序列号</param>
         /// <param name="paramName">参数键</param>
         /// <param name="value">参数值</param>
         /// <returns>
         /// 相机操作结果
         /// </returns>
-        public CameraResult SetParam(string serialNumber, string paramName, string value)
+        public CameraResult SetParam(string cameraKey, string paramName, string value)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
             return camera.SetParam(paramName, value);
         }
 
-        public CameraResult SetParam(string serialNumber, string paramName, int value)
+        public CameraResult SetParam(string cameraKey, string paramName, int value)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
             return camera.SetParam(paramName, value);
         }
 
-        public CameraResult SetParam(string serialNumber, string paramName, bool value)
+        public CameraResult SetParam(string cameraKey, string paramName, bool value)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
             return camera.SetParam(paramName, value);
         }
 
-        public CameraResult SetParam(string serialNumber, string paramName, float value)
+        public CameraResult SetParam(string cameraKey, string paramName, float value)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
             return camera.SetParam(paramName, value);
         }
 
-        public CameraResult SetEnumParam(string serialNumber, string paramName, string value)
+        public CameraResult SetEnumParam(string cameraKey, string paramName, string value)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
             return camera.SetEnumParam(paramName, value);
@@ -204,14 +216,14 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 执行相机的指定命令
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">相机序列号</param>
         /// <param name="command">命令</param>
         /// <returns>
         /// 相机操作结果
         /// </returns>
-        public CameraResult ExecuteCommand(string serialNumber, string command)
+        public CameraResult ExecuteCommand(string cameraKey, string command)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
             return camera.ExecuteCommand(command);
@@ -220,15 +232,15 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 设置相机的触发方式
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="cameraKey">相机序列号</param>
         /// <param name="triggerWay">触发方式</param>
-        /// <param name="isAcquisition">是否打开采集</param>
+        /// <param name="isAcquisition">是否打开触发</param>
         /// <returns>
         /// 相机操作结果
         /// </returns>
-        public CameraResult SetTrigger(string serialNumber, string triggerWay, bool isAcquisition)
+        public CameraResult SetTrigger(string cameraKey, string triggerWay, bool isAcquisition)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return CameraResult.Fail(-1, ErrorMsg);
 
             camera.StopGrab();
@@ -237,22 +249,23 @@ namespace IndustrialCameraManager.Common
                 return CameraResult.Fail(-1, "Check the trigger source or trigger way");
 
             string acq = isAcquisition ? "On" : "Off";
-            camera.SetParam("TriggerMode", acq);    
+            var acqResult = camera.SetEnumParam("TriggerMode", acq);
+            if (!acqResult.IsSuccess) return acqResult;
 
-            return camera.SetParam("TriggerSource", triggerWay);
+            return camera.SetEnumParam("TriggerSource", triggerWay);
         }
 
-        public T GetParam<T>(string serialNumber, string paramName)
+        public T GetParam<T>(string cameraKey, string paramName)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return default;
 
             return camera.GetParam<T>(paramName);
         }
 
-        public string GetEnumParam(string serialNumber, string paramName)
+        public string GetEnumParam(string cameraKey, string paramName)
         {
-            if (!cameraManager.TryGet(serialNumber ?? "", out var camera) || !camera.IsOpen)
+            if (!cameraManager.TryGet(cameraKey ?? "", out var camera) || !camera.IsOpen)
                 return string.Empty;
 
             return camera.GetEnumValue(paramName);
