@@ -1,8 +1,6 @@
 using IndustrialCameraManager.Abstractions;
-using MvCameraControl;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Threading.Tasks;
 
 namespace IndustrialCameraManager.Common
@@ -30,6 +28,7 @@ namespace IndustrialCameraManager.Common
         /// 打开相机
         /// </summary>
         /// <param name="info">相机信息</param>
+        /// <param name="cameraKey">相机的操作Key，该Key用于从相机Sotre中获取相机实例</param>
         /// <returns>
         /// 相机操作结果
         /// </returns>
@@ -63,7 +62,7 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 订阅指定相机的图像帧数据
         /// </summary>
-        /// <param name="cameraKey">需要订阅图像流的相机序列号</param>
+        /// <param name="cameraKey">需要订阅图像流的相机自定义名称</param>
         /// <param name="subKey">订阅者标识</param>
         /// <param name="processFrame">处理图像帧的回调函数</param>
         /// <param name="whenException">异常发生处理回调方法，当不提供异常处理回调时，将抛出该异常</param>
@@ -71,14 +70,14 @@ namespace IndustrialCameraManager.Common
         /// <returns>
         /// 是否成功订阅
         /// </returns>
-        public bool SubscribeFrameStream(string cameraKey, string subKey, Func<IFrame, Task> processFrame, Action<Exception> whenException = null, int capacity = 5)
+        public bool SubscribeFrameStream(string cameraKey, string subKey, Func<string, IFrame, Task> processFrame, Action<Exception> whenException = null, int capacity = 5)
         {
             if (processFrame == null) return false;
             if (string.IsNullOrEmpty(cameraKey) || string.IsNullOrEmpty(subKey)) return false;
 
-            var serialNumber = GetOnlineCameraSerialNumber(cameraKey);
-            if (string.IsNullOrEmpty(serialNumber)) return false;
-            if (!streamManager.GetStream(serialNumber, out var stream)) return false;
+            //var serialNumber = GetOnlineCameraSerialNumber(cameraKey);
+            //if (string.IsNullOrEmpty(serialNumber)) return false;
+            if (!streamManager.GetStream(cameraKey, out var stream)) return false;
             stream.Subscribe(subKey, capacity, processFrame, whenException);
             return true;
         }
@@ -86,14 +85,18 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 取消订阅指定相机的图像帧数据
         /// </summary>
-        /// <param name="cameraKey">相机序列号</param>
-        /// <param name="subKey">订阅者标识</param>
+        /// <param name="cameraKey">相机自定义名称</param>
+        /// <param name="subKey">订阅者标识符</param>
         /// <returns>
         /// 是否成功取消订阅
         /// </returns>
         public bool UnsubscribeFrameStream(string cameraKey, string subKey)
         {
             if (string.IsNullOrEmpty(cameraKey) || string.IsNullOrEmpty(subKey)) return false;
+
+            //var serialNumber = GetOnlineCameraSerialNumber(cameraKey);
+            //if (string.IsNullOrEmpty(serialNumber)) return false;
+
             if (!streamManager.GetStream(cameraKey, out var stream)) return false;
 
             return stream.Unsubscribe(subKey);
@@ -104,7 +107,7 @@ namespace IndustrialCameraManager.Common
         /// </summary>
         /// <param name="cameraKey">注册的相机名称</param>
         /// <returns>
-        /// 相机操作结果
+        /// 开始取流操作结果
         /// </returns>
         public CameraResult StartGrab(string cameraKey)
         {
@@ -159,8 +162,9 @@ namespace IndustrialCameraManager.Common
 
         public string GetOnlineCameraSerialNumber(string cameraKey)
         {
-            cameraManager.TryGet(cameraKey, out var camera);
-            return camera.GetSerialNumber();
+            if (cameraManager.TryGet(cameraKey, out var camera))
+                return camera.GetSerialNumber();
+            return string.Empty;
         }
 
         /// <summary>

@@ -10,9 +10,9 @@ namespace VisionServices.Extentions
         public static IServiceCollection AddVmSolution(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<IVisionControls, VmControls>();
-            serviceCollection.AddSingleton<VmSolutionService>();
-            serviceCollection.AddSingleton<ISolution>(sp => sp.GetRequiredService<VmSolutionService>());
-            serviceCollection.AddSingleton<IGroupSolution>(sp => sp.GetRequiredService<VmSolutionService>());
+            serviceCollection.AddSingleton<VmService>();
+            serviceCollection.AddSingleton<ISolution>(sp => sp.GetRequiredService<VmService>());
+            serviceCollection.AddSingleton<IGroupSolution>(sp => sp.GetRequiredService<VmService>());
 
             return serviceCollection;
         }

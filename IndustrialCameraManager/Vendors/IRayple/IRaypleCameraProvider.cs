@@ -23,7 +23,7 @@ namespace IndustrialCameraManager.Vendors.IRayple
             if (info is not IRaypleCameraInfo irInfo)
                 throw new System.ArgumentException("Invalid camera info type.");
 
-            var stream = streamManager.GetOrCreateStream(info.SerialNumber);
+            var stream = streamManager.GetOrCreateStream(info.UserDefinedName);
 
             return new IRaypleCamera(irInfo.Native, stream);
         }

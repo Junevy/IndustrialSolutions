@@ -15,7 +15,7 @@ namespace IndustrialCameraManager.Vendors.HikVision
             if (info is not HikCameraInfo hikInfo)
                 throw new System.ArgumentException("Invalid camera info type.");
 
-            var stream = streamManager.GetOrCreateStream(info.SerialNumber);
+            var stream = streamManager.GetOrCreateStream(info.UserDefinedName);
             return new HikCamera(hikInfo.Native, stream);
         }
 

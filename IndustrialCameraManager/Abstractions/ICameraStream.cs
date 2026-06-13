@@ -27,9 +27,9 @@ namespace IndustrialCameraManager.Abstractions
         /// </summary>
         /// <param name="subberKey">订阅自定义名称</param>
         /// <param name="capacity">图像缓存容量</param>
-        /// <param name="handler">帧处理回调处理方法</param>
+        /// <param name="handler">帧处理回调处理方法，参数1：发布帧数据的相机自定义名称；参数2：帧数据；参数3：异步Task</param>
         /// <param name="whenException">异常发生处理回调方法，当不提供异常处理回调时，将抛出该异常</param>
-        void Subscribe(string subberKey, int capacity, Func<IFrame, Task> handler, Action<Exception> whenException = null);
+        void Subscribe(string subberKey, int capacity, Func<string, IFrame, Task> handler, Action<Exception> whenException = null);
 
         /// <summary>
         /// 取消订阅指定相机的帧的处理数据

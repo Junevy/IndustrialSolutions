@@ -17,12 +17,19 @@ namespace IndustrialCameraManager.Common
         /// Value：订阅者
         /// </summary>
         private readonly ConcurrentDictionary<string, CameraStreamSuber> subscribers = new();
+        private readonly string userDefinedName;
 
         // 订阅数量
         public int SubscriberCount => subscribers.Count;
 
 
-        public void Subscribe(string subberKey, int capacity, Func<IFrame, Task> handler, Action<Exception> whenException = null)
+        public CameraStream(string userDefinedName)
+        {
+            this.userDefinedName = userDefinedName;
+        }
+
+
+        public void Subscribe(string subberKey, int capacity, Func<string, IFrame, Task> handler, Action<Exception> whenException = null)
         {
             var channel = Channel.CreateBounded<IFrame>(
                 new BoundedChannelOptions(capacity)
@@ -44,7 +51,7 @@ namespace IndustrialCameraManager.Common
                         {
                             try
                             {
-                                await handler(frame);
+                                await handler(this.userDefinedName, frame);
                             }
                             catch (Exception ex)
                             {

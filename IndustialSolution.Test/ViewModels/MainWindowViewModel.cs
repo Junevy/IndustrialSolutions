@@ -107,7 +107,7 @@ namespace IndustialSolution.Test.ViewModels
 
 
 
-        private async Task ProcessFrame(IFrame frame)
+        private async Task ProcessFrame(string userDefinedName, IFrame frame)
         {
             try
             {

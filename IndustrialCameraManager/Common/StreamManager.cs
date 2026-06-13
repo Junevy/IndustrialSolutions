@@ -23,36 +23,36 @@ namespace IndustrialCameraManager.Common
         /// <summary>
         /// 获取或创建指定的相机的图像数据流
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="userDefinedName">相机自定义名称</param>
         /// <returns>
         /// 相机图像数据流
         /// </returns>
-        /// <exception cref="ArgumentNullException">serialNumber 为空</exception>
-        public ICameraStream GetOrCreateStream(string serialNumber)
+        /// <exception cref="ArgumentNullException">userDefinedName 为空</exception>
+        public ICameraStream GetOrCreateStream(string userDefinedName)
         {
-            if (string.IsNullOrEmpty(serialNumber))
-                throw new ArgumentNullException(nameof(serialNumber));
+            if (string.IsNullOrEmpty(userDefinedName))
+                throw new ArgumentNullException(nameof(userDefinedName));
 
-            return streams.GetOrAdd(serialNumber, _ => new CameraStream());
+            return streams.GetOrAdd(userDefinedName, _ => new CameraStream(userDefinedName));
         }
 
         /// <summary>
         /// 获取指定的相机的图像数据流
         /// </summary>
-        /// <param name="serialNumber">相机序列号</param>
+        /// <param name="userDefinedName">相机自定义名称</param>
         /// <param name="stream">相机图像数据流</param>
         /// <returns>
         /// 是否成功获取到图像数据流
         /// </returns>
-        /// <exception cref="ArgumentNullException">serialNumber 为空</exception>
-        public bool GetStream(string serialNumber, out ICameraStream stream)
+        /// <exception cref="ArgumentNullException">userDefinedName 为空</exception>
+        public bool GetStream(string userDefinedName, out ICameraStream stream)
         {
             stream = null;
 
-            if (string.IsNullOrEmpty(serialNumber))
+            if (string.IsNullOrEmpty(userDefinedName))
                 return false;
 
-            return streams.TryGetValue(serialNumber, out stream);
+            return streams.TryGetValue(userDefinedName, out stream);
         }
     }
 }
