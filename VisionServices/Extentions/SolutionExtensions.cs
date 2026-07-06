@@ -2,6 +2,7 @@
 using VisionServices.Controls;
 using VisionServices.Core;
 using VisionServices.Services.VisionMaster;
+using VisionServices.Store;
 
 namespace VisionServices.Extentions
 {
@@ -9,6 +10,7 @@ namespace VisionServices.Extentions
     {
         public static IServiceCollection AddVmSolution(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddSingleton<ProcedureStore>();
             serviceCollection.AddSingleton<IVisionControls, VmControls>();
             serviceCollection.AddSingleton<VmService>();
             serviceCollection.AddSingleton<ISolution>(sp => sp.GetRequiredService<VmService>());

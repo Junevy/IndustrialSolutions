@@ -1,15 +1,19 @@
 ﻿using System.Reflection;
 using VisionServices.Core;
+using VisionServices.Store;
 using VM.Core;
 
 namespace VisionServices.Services.VisionMaster
 {
     public class VmService : ISolution, IGroupSolution
     {
+        private readonly ProcedureStore store;
+
         private VmSolution Solution => VmSolution.Instance;
 
-        public VmService()
+        public VmService(ProcedureStore store)
         {
+            this.store = store;
         }
 
         public void Load(string solutionPath)
@@ -44,11 +48,11 @@ namespace VisionServices.Services.VisionMaster
             throw new NotImplementedException();
         }
 
-        public object? GetModule(string moduleName, string groupName = "流程1") => this.Solution[$"{groupName}.{moduleName}"];
+        public object? TryGetModule(string moduleName, string groupName = "流程1") => this.Solution[$"{groupName}.{moduleName}"];
 
-        public T? GetModule<T>(string moduleName, string groupName = "流程1") where T : class => this.Solution[$"{groupName}.{moduleName}"] as T;
+        public T? TryGetModule<T>(string moduleName, string groupName = "流程1") where T : class => this.Solution[$"{groupName}.{moduleName}"] as T;
 
-        public T? GetModuOutput<T>(string algorithmName, string paramName, string groupName = "流程1")
+        public T? TryGetModuOutput<T>(string algorithmName, string paramName, string groupName = "流程1")
         {
             if (string.IsNullOrEmpty(algorithmName)
                 || string.IsNullOrEmpty(paramName)
@@ -86,14 +90,14 @@ namespace VisionServices.Services.VisionMaster
             return currentProperty;
         }
 
-        public object? GetGroup(string groupName = "流程1") => this.Solution[groupName];
-
-        public T? GetGroupOutput<T>(string paramName, string groupName = "流程1")
+        public object? TryGetGroup(string groupName = "流程1")
         {
-            if (string.IsNullOrEmpty(groupName) || string.IsNullOrEmpty(paramName))
-                return default;
+            store.TryGet(groupName, out var p);
+            return p;
+        }
 
-            VmProcedure vp = (VmProcedure)VmSolution.Instance[groupName];
+        public T? TryGetGroupOutput<T>(VmProcedure vp, string paramName)
+        {
             if (vp == null) return default;
 
             if (typeof(T) == typeof(string))
@@ -122,20 +126,31 @@ namespace VisionServices.Services.VisionMaster
             return default;
         }
 
+        public T? TryGetGroupOutput<T>(string paramName, string groupName = "流程1")
+        {
+            if (string.IsNullOrEmpty(groupName) || string.IsNullOrEmpty(paramName))
+                return default;
+
+            VmProcedure vp = (VmProcedure)VmSolution.Instance[groupName];
+            return TryGetGroupOutput<T>(vp, paramName);
+        }
+
         public Dictionary<string, object> GetGroupOutputs(Dictionary<string, string> paramInfo, string groupName = "流程1")
         {
             Dictionary<string, object> paramPairs = new();
 
             var names = paramInfo.Select(x => x.Key).ToList();
+            //if (names == null) return paramPairs;
+
             foreach (var n in names)
             {
                 var type = paramInfo[n];
                 if (type == "string")
-                    paramPairs[n] = GetGroupOutput<string>(n) ?? string.Empty;
+                    paramPairs[n] = TryGetGroupOutput<string>(n) ?? string.Empty;
                 else if (type == "int")
-                    paramPairs[n] = GetGroupOutput<float>(n);
+                    paramPairs[n] = TryGetGroupOutput<float>(n);
                 else if (type == "float")
-                    paramPairs[n] = GetGroupOutput<float>(n);
+                    paramPairs[n] = TryGetGroupOutput<float>(n);
             }
             return paramPairs;
         }

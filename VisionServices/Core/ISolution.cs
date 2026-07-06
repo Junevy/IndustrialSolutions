@@ -24,7 +24,7 @@
         /// <param name="paramName">指定的结果</param>
         /// <param name="groupName">流程名称</param>
         /// <returns></returns>
-        public T? GetModuOutput<T>(string algorithmName, string paramName, string groupName = "流程1");
+        public T? TryGetModuOutput<T>(string algorithmName, string paramName, string groupName = "流程1");
 
         /// <summary>
         /// 获取指定的算子模块
@@ -32,7 +32,7 @@
         /// <param name="moduleName">算子模块名称</param>
         /// <param name="groupName">流程名称</param>
         /// <returns>指定的算子模块</returns>
-        public object? GetModule(string moduleName, string groupName = "流程1");
+        public object? TryGetModule(string moduleName, string groupName = "流程1");
 
         /// <summary>
         /// 获得指定类型的算子模块
@@ -41,7 +41,7 @@
         /// <param name="moduleName">算子模块名称</param>
         /// <param name="groupName">流程名称</param>
         /// <returns>指定的算子模块</returns>
-        public T? GetModule<T>(string moduleName, string groupName = "流程1") where T : class;
+        public T? TryGetModule<T>(string moduleName, string groupName = "流程1") where T : class;
 
 
     }
