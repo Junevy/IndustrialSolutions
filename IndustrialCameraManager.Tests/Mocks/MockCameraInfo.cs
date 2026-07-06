@@ -13,5 +13,7 @@ namespace IndustrialCameraManager.Tests.Mocks
         public string Manufacturer { get; set; }
 
         public string CameraVersion { get; set; }
+
+        public CameraType InterfaceType { get; set; } = CameraType.GigE;
     }
 }

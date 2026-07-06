@@ -76,6 +76,11 @@ namespace IndustrialCameraManager.Tests.Mocks
             return CameraResult.Success(0);
         }
 
+        public string GetSerialNumber()
+        {
+            return "SN-MOCK-001";
+        }
+
         public void Dispose()
         {
             IsDisposed = true;
