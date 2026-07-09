@@ -8,6 +8,9 @@ namespace VisionServices.Services.VisionMaster
     public class VmService : ISolution, IGroupSolution
     {
         private readonly ProcedureStore store;
+        private volatile int isLoaded = 0;
+
+        public bool IsLoaded => isLoaded == 1;
 
         private VmSolution Solution => VmSolution.Instance;
 
@@ -18,8 +21,13 @@ namespace VisionServices.Services.VisionMaster
 
         public void Load(string solutionPath)
         {
+#if NET6_0_OR_GREATER
+            ArgumentException.ThrowIfNullOrEmpty(solutionPath);
+#elif NET46_OR_GREATER
             if (solutionPath == null) throw new ArgumentNullException(nameof(solutionPath));
+#endif
             VmSolution.Load(solutionPath);
+            Interlocked.Exchange(ref isLoaded, 1);
         }
 
         public async Task LoadAsync(string solutionPath)
@@ -30,29 +38,54 @@ namespace VisionServices.Services.VisionMaster
             });
         }
 
-        public void test()
+        public bool Run()
         {
-            //Solution.
+            if (Interlocked.CompareExchange(ref isLoaded, 1, 1) == 1)
+            {
+                Solution.SyncRun();
+                return true;
+            }
+            return false;
         }
 
-        public void Run() => Solution.SyncRun();
+        public bool RunAsync()
+        {
+            if (Interlocked.CompareExchange(ref isLoaded, 1, 1) == 1)
+            {
+                Solution.Run();
+                return true;
+            }
+            return false;
+        }
 
-        public void RunAsync() => Solution.Run();
+        public string Save()
+        {
+            if (Interlocked.CompareExchange(ref isLoaded, 1, 1) == 1)
+            {
+                return VmSolution.Save();
+            }
+            return string.Empty;
+        }
 
-        public void Save() => VmSolution.Save();
+        public string SaveAs(string targetPath)
+        {
+            if (Interlocked.CompareExchange(ref isLoaded, 1, 1) == 1)
+            {
+                return VmSolution.SaveAs(targetPath);
+            }
+            return string.Empty;
+        }
 
-        public void SaveAs(string targetPath) => VmSolution.SaveAs(targetPath);
-
-        public bool SetModuParam<T>(string paramName, T value, string groupName = "流程1")
+        public bool SetModuParam<T>(string paramName, T value, string groupName)
         {
             throw new NotImplementedException();
         }
 
-        public object? TryGetModule(string moduleName, string groupName = "流程1") => this.Solution[$"{groupName}.{moduleName}"];
+        public object? TryGetModule(string moduleName, string groupName) => this.Solution[$"{groupName}.{moduleName}"];
 
-        public T? TryGetModule<T>(string moduleName, string groupName = "流程1") where T : class => this.Solution[$"{groupName}.{moduleName}"] as T;
+        public T? TryGetModule<T>(string moduleName, string groupName) where T : class => this.Solution[$"{groupName}.{moduleName}"] as T;
 
-        public T? TryGetModuOutput<T>(string algorithmName, string paramName, string groupName = "流程1")
+        public T? TryGetModuOutput<T>(string algorithmName, string paramName, string groupName)
         {
             if (string.IsNullOrEmpty(algorithmName)
                 || string.IsNullOrEmpty(paramName)
@@ -90,10 +123,21 @@ namespace VisionServices.Services.VisionMaster
             return currentProperty;
         }
 
-        public object? TryGetGroup(string groupName = "流程1")
+        public bool TryGetGroup(string groupName, out VmProcedure? procedure)
         {
-            store.TryGet(groupName, out var p);
-            return p;
+            procedure = null;
+#if NET6_0_OR_GREATER
+            ArgumentException.ThrowIfNullOrEmpty(groupName);
+#elif NET46_OR_GREATER
+            if (groupName == null) throw new ArgumentNullException(nameof(groupName));
+#endif
+
+            if (store.TryGet(groupName, out var p))
+            {
+                procedure = p;
+                return true;
+            }
+            return false;
         }
 
         public T? TryGetGroupOutput<T>(VmProcedure vp, string paramName)
@@ -107,8 +151,7 @@ namespace VisionServices.Services.VisionMaster
                     return (T)(object)result.astStringVal[0].strValue;
                 return default;
             }
-
-            if (typeof(T) == typeof(int))
+            else if (typeof(T) == typeof(int))
             {
                 var result = vp.ModuResult.GetOutputInt(paramName);
                 if (result.nValueNum > 0)
@@ -126,40 +169,58 @@ namespace VisionServices.Services.VisionMaster
             return default;
         }
 
-        public T? TryGetGroupOutput<T>(string paramName, string groupName = "流程1")
+        public T? TryGetGroupOutput<T>(string paramName, string groupName)
         {
             if (string.IsNullOrEmpty(groupName) || string.IsNullOrEmpty(paramName))
                 return default;
 
-            VmProcedure vp = (VmProcedure)VmSolution.Instance[groupName];
-            return TryGetGroupOutput<T>(vp, paramName);
+            if (TryGetGroup(groupName, out var group))
+            {
+                if (group is VmProcedure g)
+                    return TryGetGroupOutput<T>(g, paramName);
+            }
+            return default;
         }
 
-        public Dictionary<string, object> GetGroupOutputs(Dictionary<string, string> paramInfo, string groupName = "流程1")
+        public Dictionary<string, object> GetGroupOutputs(Dictionary<string, string> paramInfo, string groupName)
         {
             Dictionary<string, object> paramPairs = new();
-
             var names = paramInfo.Select(x => x.Key).ToList();
-            //if (names == null) return paramPairs;
 
             foreach (var n in names)
             {
                 var type = paramInfo[n];
                 if (type == "string")
-                    paramPairs[n] = TryGetGroupOutput<string>(n) ?? string.Empty;
+                    paramPairs[n] = TryGetGroupOutput<string>(n, groupName) ?? string.Empty;
                 else if (type == "int")
-                    paramPairs[n] = TryGetGroupOutput<float>(n);
+                    paramPairs[n] = TryGetGroupOutput<int>(n, groupName);
                 else if (type == "float")
-                    paramPairs[n] = TryGetGroupOutput<float>(n);
+                    paramPairs[n] = TryGetGroupOutput<float>(n, groupName);
+            }
+            return paramPairs;
+        }
+
+        public Dictionary<string, object> GetGroupOutputs(Dictionary<string, string> paramInfo, VmProcedure group)
+        {
+            Dictionary<string, object> paramPairs = new();
+            foreach (var n in paramInfo.Keys)
+            {
+                //var type = paramInfo[n];
+                if (paramInfo[n] == "string")
+                    paramPairs[n] = TryGetGroupOutput<string>(group, n) ?? string.Empty;
+                else if (paramInfo[n] == "int")
+                    paramPairs[n] = TryGetGroupOutput<int>(group, n);
+                else if (paramInfo[n] == "float")
+                    paramPairs[n] = TryGetGroupOutput<float>(group, n);
             }
             return paramPairs;
         }
 
         public void Dispose()
         {
+            if (Solution == null) return;
             Solution.Dispose();
+            Interlocked.Exchange(ref isLoaded, 0);
         }
-
-
     }
 }

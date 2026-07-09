@@ -15,7 +15,8 @@ namespace VisionServices.Store
                 vmProcedure = p;
 #if NET8_0_OR_GREATER
                 return procedures.TryAdd(procedureName, p);
-#elif NET48
+#elif NET46
+                if (procedures.ContainsKey(procedureName)) return false;
                 procedures.Add(procedureName, p);
                 return true;
 #endif
