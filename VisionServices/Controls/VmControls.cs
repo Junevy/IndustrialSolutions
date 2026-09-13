@@ -6,10 +6,11 @@ using VMControls.WPF.Release;
 
 namespace VisionServices.Controls
 {
-    internal class VmControls : IVisionControls
+    public class VmControls : IVisionControls
     {
         private VmRenderControl imageRender = new();
         private VmMainViewConfigControl mainRender = new();
+        private int isLoaded = 0;
 
         public FrameworkElement ImageRender { get => imageRender; }
         public FrameworkElement MainRender { get => mainRender; }
@@ -51,9 +52,12 @@ namespace VisionServices.Controls
 
         private void ChangeBackground(object sender, RoutedEventArgs e)
         {
-            if (this.ImageRender is VmRenderControl render)
+            if (Interlocked.CompareExchange(ref isLoaded, 1, 0) == 0)
             {
-                render.SetBackground(@"D:\iCloud\iCloudDrive\WorkSpace\Resource\Images\Resources\whiteCheckBoard7.png");
+                if (this.ImageRender is VmRenderControl render)
+                {
+                    render.SetBackground(@"D:\iCloud\iCloudDrive\WorkSpace\Resource\Images\Resources\whiteCheckBoard7.png");
+                }
             }
         }
 

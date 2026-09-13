@@ -14,6 +14,9 @@ namespace VisionServices.Services.VisionMaster
 
         private VmSolution Solution => VmSolution.Instance;
 
+        public string SolutionPath { get; private set; }
+
+
         public VmService(ProcedureStore store)
         {
             this.store = store;
@@ -28,6 +31,7 @@ namespace VisionServices.Services.VisionMaster
 #endif
             VmSolution.Load(solutionPath);
             Interlocked.Exchange(ref isLoaded, 1);
+            SolutionPath = solutionPath;
         }
 
         public async Task LoadAsync(string solutionPath)

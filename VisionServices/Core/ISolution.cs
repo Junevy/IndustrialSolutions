@@ -2,6 +2,10 @@
 {
     public interface ISolution : IDisposable
     {
+        public bool IsLoaded { get; }
+
+        public string SolutionPath { get; }
+
         public void Load(string solutionPath);
 
         public Task LoadAsync(string solutionPath);
